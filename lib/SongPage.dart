@@ -72,7 +72,9 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: FloatingActionButton.extended(
-                          onPressed: () {}, label: Text('Add a new track')),
+                          heroTag: null,
+                          onPressed: () {},
+                          label: Text('Add a new track')),
                     )
                   ],
                 ),

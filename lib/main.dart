@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'RecordingPage.dart';
 import 'components/TrackCard.dart';
 
 void main() {
@@ -64,8 +65,10 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
-        heroTag: 'addTrack',
+        onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => RecordingPage(),
+        )),
+        heroTag: null,
         label: Text('Create Track'),
         icon: Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
