@@ -65,6 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {},
+        heroTag: 'addTrack',
         label: Text('Create Track'),
         icon: Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
