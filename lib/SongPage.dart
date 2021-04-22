@@ -71,7 +71,7 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
                         padding: EdgeInsets.all(16.0),
                         scrollDirection: Axis.vertical,
                         itemBuilder: (BuildContext context, int index) {
-                          return TrackComment();
+                          return Track();
                         }),
                   ),
                   Expanded(
@@ -91,13 +91,15 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
                 Column(children: [
                   Expanded(
                     flex: 8,
-                    child: ListView(scrollDirection: Axis.vertical, children: [
-                      Text("Hello"),
-                      Text("Hello"),
-                      Text("Hello"),
-                      Text("Hello"),
-                      Text("Hello"),
-                    ]),
+                    child: ListView.separated(
+                        itemCount: getTrackCount(),
+                        separatorBuilder: (BuildContext context, int index) =>
+                            Divider(),
+                        padding: EdgeInsets.all(16.0),
+                        scrollDirection: Axis.vertical,
+                        itemBuilder: (BuildContext context, int index) {
+                          return Comment();
+                        }),
                   ),
                   Expanded(
                     flex: 2,
@@ -207,7 +209,7 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
   }
 }
 
-class TrackComment extends StatelessWidget {
+class Track extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -252,5 +254,30 @@ class TrackComment extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class Comment extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(10),
+              topRight: Radius.circular(10),
+              bottomLeft: Radius.circular(10),
+              bottomRight: Radius.circular(10)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.5),
+              spreadRadius: 5,
+              blurRadius: 7,
+              offset: Offset(0, 3), // changes position of shadow
+            ),
+          ],
+        ),
+        padding: EdgeInsets.all(16),
+        child: Text("sample text"));
   }
 }
