@@ -1,6 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_sound/flutter_sound.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:rechord/SubmitPage.dart';
 
 enum RecordingStage { notRecording, recording, reviewRecording }
 
@@ -10,9 +13,15 @@ class RecordingPage extends StatefulWidget {
 }
 
 class _RecordingPageState extends State<RecordingPage> {
-  RecordingStage stage;
-  DateTime recordStartTime;
-  Timer timer;
+  RecordingStage? stage;
+  late DateTime recordStartTime;
+  late Timer timer;
+
+  late FlutterSoundRecorder _recorder;
+  late FlutterSoundPlayer _player;
+  Track? track;
+
+  static const String recordTrack = 'recorded_sound';
 
   @override
   void initState() {
@@ -21,20 +30,45 @@ class _RecordingPageState extends State<RecordingPage> {
     stage = RecordingStage.notRecording;
     const oneSecond = const Duration(milliseconds: 100);
     timer = Timer.periodic(oneSecond, (Timer t) {
-      if (mounted) {
+      if (mounted && stage == RecordingStage.recording) {
         setState(() {});
       }
+    });
+
+    requestPermissions();
+
+    _recorder = FlutterSoundRecorder();
+    _recorder.openAudioSession().then((value) {
+      // setState(() {
+      //   _mRecorderIsInited = true;
+      // });
+    });
+
+    _player = FlutterSoundPlayer();
+    _player.openAudioSession().then((value) {
+      // setState(() {
+      //   _mPlayerIsInited = true;
+      // });
     });
   }
 
   @override
   void dispose() {
     timer.cancel();
+    _recorder.closeAudioSession();
+    _player.closeAudioSession();
     super.dispose();
   }
 
+  void requestPermissions() async {
+    var status = await Permission.microphone.status;
+    if (status.isDenied) {
+      Permission.microphone.request();
+    }
+  }
+
   String getTitleText() {
-    switch (stage) {
+    switch (stage!) {
       case RecordingStage.notRecording:
         return 'Start recording!';
       case RecordingStage.recording:
@@ -42,7 +76,34 @@ class _RecordingPageState extends State<RecordingPage> {
       case RecordingStage.reviewRecording:
         return 'Recorded!';
     }
-    return '';
+  }
+
+  void record() async {
+    await _recorder.startRecorder(
+      toFile: recordTrack,
+      codec: Codec.aacADTS,
+    );
+  }
+
+  void stopRecorder() async {
+    await _recorder.stopRecorder();
+    track = Track(trackPath: recordTrack, codec: Codec.aacADTS);
+    setState(() {});
+  }
+
+  void startPlayer() async {
+    await _player.startPlayer(
+        fromURI: recordTrack,
+        codec: Codec.aacADTS,
+        whenFinished: () {
+          setState(() {});
+        });
+    setState(() {});
+  }
+
+  void stopPlayer() async {
+    await _player.stopPlayer();
+    setState(() {});
   }
 
   @override
@@ -101,18 +162,21 @@ class _RecordingPageState extends State<RecordingPage> {
     int sec = duration.inSeconds % 60;
     return Column(
       children: [
-        Text('${min}:${sec ~/ 10 == 0 ? '0' + sec.toString() : sec} / 1:00',
+        Text('$min:${sec ~/ 10 == 0 ? '0' + sec.toString() : sec} / 1:00',
             style: TextStyle(color: Colors.white)),
         SizedBox(height: 16.0),
         InkWell(
           onTap: () {
-            switch (stage) {
+            switch (stage!) {
               case RecordingStage.notRecording:
                 stage = RecordingStage.recording;
                 recordStartTime = DateTime.now();
+                record();
                 break;
               case RecordingStage.recording:
                 stage = RecordingStage.reviewRecording;
+                stopRecorder();
+                setState(() {});
                 break;
               case RecordingStage.reviewRecording:
                 stage = RecordingStage.notRecording;
@@ -160,6 +224,13 @@ class _RecordingPageState extends State<RecordingPage> {
   Column buildBottomReview() {
     return Column(
       children: [
+        track != null
+            ? Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SoundPlayerUI.fromTrack(track!),
+              )
+            : Container(),
+        SizedBox(height: 64),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -185,7 +256,11 @@ class _RecordingPageState extends State<RecordingPage> {
               ),
             ),
             InkWell(
-              onTap: () => setState(() => stage = RecordingStage.notRecording),
+              onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => SubmitPage(
+                  path: recordTrack,
+                ),
+              )),
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16.0),

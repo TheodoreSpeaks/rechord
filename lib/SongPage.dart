@@ -7,7 +7,7 @@ class SongPage extends StatefulWidget {
 }
 
 class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
-  TabController _tabController;
+  TabController? _tabController;
 
   @override
   void initState() {
@@ -18,17 +18,14 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-      ),
       body: Column(
         children: [
           Expanded(
-            flex: 1,
+            flex: 3,
             child: buildHeader(),
           ),
           Expanded(
-            flex: 3,
+            flex: 5,
             child: buildTrackComments(),
           )
         ],
@@ -64,21 +61,60 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
             child: TabBarView(
               controller: _tabController,
               children: [
-                ListView(
-                  children: [
-                    TrackComment(),
-                    TrackComment(),
-                    TrackComment(),
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: FloatingActionButton.extended(
-                          heroTag: null,
-                          onPressed: () {},
-                          label: Text('Add a new track')),
-                    )
-                  ],
-                ),
-                Text('It\'s rainy here'),
+                Column(children: [
+                  Expanded(
+                    flex: 8,
+                    child: ListView.separated(
+                        itemCount: getTrackCount(),
+                        separatorBuilder: (BuildContext context, int index) =>
+                            Divider(),
+                        padding: EdgeInsets.all(16.0),
+                        scrollDirection: Axis.vertical,
+                        itemBuilder: (BuildContext context, int index) {
+                          return Track();
+                        }),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 10.0, horizontal: 16.0),
+                        child: AspectRatio(
+                          aspectRatio: 42 / 9,
+                          child: FloatingActionButton.extended(
+                              heroTag: null,
+                              onPressed: () {},
+                              label: Text('Add a new track')),
+                        )),
+                  )
+                ]),
+                Column(children: [
+                  Expanded(
+                    flex: 8,
+                    child: ListView.separated(
+                        itemCount: getTrackCount(),
+                        separatorBuilder: (BuildContext context, int index) =>
+                            Divider(),
+                        padding: EdgeInsets.all(16.0),
+                        scrollDirection: Axis.vertical,
+                        itemBuilder: (BuildContext context, int index) {
+                          return Comment();
+                        }),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 10.0, horizontal: 16.0),
+                        child: AspectRatio(
+                          aspectRatio: 42 / 9,
+                          child: FloatingActionButton.extended(
+                              heroTag: null,
+                              onPressed: () {},
+                              label: Text('Add a comment')),
+                        )),
+                  )
+                ]),
               ],
             ),
           ),
@@ -87,15 +123,30 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
     );
   }
 
+  int getTrackCount() {
+    // Do backend stuff
+    return 4;
+  }
+
   Container buildHeader() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       width: double.infinity,
       height: double.infinity,
-      color: Colors.purple,
+      // color: Colors.purple,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+            colors: [Colors.red, Colors.purple],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          AppBar(
+            elevation: 0,
+            backgroundColor: Colors.transparent,
+          ),
           Text(
             "Created this funky bassline, have fun with it y'all!",
             style: TextStyle(color: Colors.white, fontSize: 20),
@@ -148,7 +199,7 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
         margin: EdgeInsets.all(1),
         decoration: BoxDecoration(
             color: Colors.white70, borderRadius: BorderRadius.circular(30)),
-        width: 6,
+        width: 4,
         height: 24 * (sin(i * pi / 4) + 1),
       ));
     }
@@ -158,22 +209,35 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
   }
 }
 
-class TrackComment extends StatelessWidget {
-  const TrackComment({
-    Key key,
-  }) : super(key: key);
-
+class Track extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(10),
+            topRight: Radius.circular(10),
+            bottomLeft: Radius.circular(10),
+            bottomRight: Radius.circular(10)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.5),
+            spreadRadius: 5,
+            blurRadius: 7,
+            offset: Offset(0, 3), // changes position of shadow
+          ),
+        ],
+      ),
+      padding: EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('@CJRosas'),
-          SizedBox(height: 4),
-          Text('Got a simple drum track for that!',
-              style: TextStyle(fontSize: 18)),
+          Padding(padding: EdgeInsets.all(4), child: Text('@CJRosas')),
+          Padding(
+              padding: EdgeInsets.all(4),
+              child: Text('Got a simple drum track for that!',
+                  style: TextStyle(fontSize: 18))),
           SizedBox(height: 8),
           Row(
             children: [
@@ -190,5 +254,30 @@ class TrackComment extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class Comment extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(10),
+              topRight: Radius.circular(10),
+              bottomLeft: Radius.circular(10),
+              bottomRight: Radius.circular(10)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.5),
+              spreadRadius: 5,
+              blurRadius: 7,
+              offset: Offset(0, 3), // changes position of shadow
+            ),
+          ],
+        ),
+        padding: EdgeInsets.all(16),
+        child: Text("sample text"));
   }
 }

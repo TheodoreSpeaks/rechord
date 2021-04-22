@@ -4,10 +4,6 @@ import 'dart:math';
 import '../SongPage.dart';
 
 class TrackCard extends StatelessWidget {
-  const TrackCard({
-    Key key,
-  }) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -23,7 +19,7 @@ class TrackCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(32)),
           padding: EdgeInsets.all(16.0),
           margin: EdgeInsets.only(left: 8.0, right: 8.0, top: 16.0),
-          height: 250,
+          height: 210,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -88,7 +84,7 @@ class TrackCard extends StatelessWidget {
         margin: EdgeInsets.all(1),
         decoration: BoxDecoration(
             color: Colors.white70, borderRadius: BorderRadius.circular(30)),
-        width: 6,
+        width: 4,
         height: 24 * (sin(i * pi / 4) + 1),
       ));
     }
