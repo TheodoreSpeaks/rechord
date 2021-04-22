@@ -61,27 +61,69 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
             child: TabBarView(
               controller: _tabController,
               children: [
-                ListView(
-                  children: [
-                    TrackComment(),
-                    TrackComment(),
-                    TrackComment(),
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: FloatingActionButton.extended(
-                          heroTag: null,
-                          onPressed: () {},
-                          label: Text('Add a new track')),
-                    )
-                  ],
-                ),
-                Text('It\'s rainy here'),
+                Column(children: [
+                  Expanded(
+                    flex: 8,
+                    child: ListView.separated(
+                        itemCount: getTrackCount(),
+                        separatorBuilder: (BuildContext context, int index) =>
+                            Divider(),
+                        padding: EdgeInsets.all(16.0),
+                        scrollDirection: Axis.vertical,
+                        itemBuilder: (BuildContext context, int index) {
+                          return TrackComment();
+                        }),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 10.0, horizontal: 16.0),
+                        child: AspectRatio(
+                          aspectRatio: 42 / 9,
+                          child: FloatingActionButton.extended(
+                              heroTag: null,
+                              onPressed: () {},
+                              label: Text('Add a new track')),
+                        )),
+                  )
+                ]),
+                Column(children: [
+                  Expanded(
+                    flex: 8,
+                    child: ListView(scrollDirection: Axis.vertical, children: [
+                      Text("Hello"),
+                      Text("Hello"),
+                      Text("Hello"),
+                      Text("Hello"),
+                      Text("Hello"),
+                    ]),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 10.0, horizontal: 16.0),
+                        child: AspectRatio(
+                          aspectRatio: 42 / 9,
+                          child: FloatingActionButton.extended(
+                              heroTag: null,
+                              onPressed: () {},
+                              label: Text('Add a comment')),
+                        )),
+                  )
+                ]),
               ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  int getTrackCount() {
+    // Do backend stuff
+    return 4;
   }
 
   Container buildHeader() {
@@ -155,7 +197,7 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
         margin: EdgeInsets.all(1),
         decoration: BoxDecoration(
             color: Colors.white70, borderRadius: BorderRadius.circular(30)),
-        width: 6,
+        width: 4,
         height: 24 * (sin(i * pi / 4) + 1),
       ));
     }
@@ -169,14 +211,31 @@ class TrackComment extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(10),
+            topRight: Radius.circular(10),
+            bottomLeft: Radius.circular(10),
+            bottomRight: Radius.circular(10)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.5),
+            spreadRadius: 5,
+            blurRadius: 7,
+            offset: Offset(0, 3), // changes position of shadow
+          ),
+        ],
+      ),
+      padding: EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('@CJRosas'),
-          SizedBox(height: 4),
-          Text('Got a simple drum track for that!',
-              style: TextStyle(fontSize: 18)),
+          Padding(padding: EdgeInsets.all(4), child: Text('@CJRosas')),
+          Padding(
+              padding: EdgeInsets.all(4),
+              child: Text('Got a simple drum track for that!',
+                  style: TextStyle(fontSize: 18))),
           SizedBox(height: 8),
           Row(
             children: [
