@@ -4,10 +4,6 @@ import 'dart:math';
 import '../SongPage.dart';
 
 class TrackCard extends StatelessWidget {
-  const TrackCard({
-    Key key,
-  }) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return InkWell(

@@ -7,7 +7,7 @@ class SongPage extends StatefulWidget {
 }
 
 class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
-  TabController _tabController;
+  TabController? _tabController;
 
   @override
   void initState() {
@@ -18,17 +18,14 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-      ),
       body: Column(
         children: [
           Expanded(
-            flex: 1,
+            flex: 3,
             child: buildHeader(),
           ),
           Expanded(
-            flex: 3,
+            flex: 5,
             child: buildTrackComments(),
           )
         ],
@@ -92,10 +89,20 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
       width: double.infinity,
       height: double.infinity,
-      color: Colors.purple,
+      // color: Colors.purple,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+            colors: [Colors.red, Colors.purple],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          AppBar(
+            elevation: 0,
+            backgroundColor: Colors.transparent,
+          ),
           Text(
             "Created this funky bassline, have fun with it y'all!",
             style: TextStyle(color: Colors.white, fontSize: 20),
@@ -159,10 +166,6 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
 }
 
 class TrackComment extends StatelessWidget {
-  const TrackComment({
-    Key key,
-  }) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return Container(
