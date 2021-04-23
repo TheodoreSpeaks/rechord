@@ -6,7 +6,7 @@ from werkzeug.utils import secure_filename
 
 
 SAVE_DIR = "../data/"
-FILE_DIR = "./data"
+FILE_DIR = "../data/"
 if not os.path.isdir(SAVE_DIR):
     os.mkdir(SAVE_DIR)
 
@@ -66,6 +66,11 @@ def single_post(post_id):
     post_file = post_dir + 'post_file'
     post = load_dict(post_file)
     return jsonify(post)
+
+
+@app.route('/get_file/<file_path>', methods=['GET'])
+def get_file(file_path):
+    return send_file(file_path)
 
 
 @app.route('/new_post', methods=['POST'])
@@ -148,37 +153,37 @@ def new_track(post_id):
         return jsonify({'status': 'successfully added comment to post with post id %s' % post_id})
 
 
-# @app.route('/', methods=['GET', 'POST'])
-# def homepage():
-#     data = request.form.to_dict(flat=False)
-#     print(data)
-    # if data:
-    #     directories = os.listdir(SAVE_DIR)
-    #     post_id = str(len(directories))
-    #     data['post_id'] = post_id
-    #     post_path = os.path.join(SAVE_DIR, post_id)
-    #     if not os.path.isdir(post_path):
-    #         os.mkdir(post_path)
-    #     filename = upload_file(post_id)
-    #     if filename is not None:
-    #         data['file'] = filename
-    #     post_file = post_path + '/' + 'post_file'
-    #     save_dict(data, post_file)
-    #     return jsonify({'status': 'success'})
-    # return '''
-    #     <!doctype html>
-    #     <title>Upload new File</title>
-    #     <h1>Post</h1>
-    #     <form method=post enctype=multipart/form-data>
-    #       <label for="title"> Title </label>
-    #       <input type="text" name="title">
-    #       <label for="user"> User </label>
-    #       <input type="text" name="user">
-    #       <label for="file"> File </label>
-    #       <input type=file name=file>
-    #       <input type=submit value=Submit>
-    #     </form>
-    #     '''
+@app.route('/', methods=['GET', 'POST'])
+def homepage():
+    data = request.form.to_dict(flat=False)
+    print(data)
+    if data:
+        directories = os.listdir(SAVE_DIR)
+        post_id = str(len(directories))
+        data['post_id'] = post_id
+        post_path = os.path.join(SAVE_DIR, post_id)
+        if not os.path.isdir(post_path):
+            os.mkdir(post_path)
+        filename = upload_file(post_id)
+        if filename is not None:
+            data['file'] = filename
+        post_file = post_path + '/' + 'post_file'
+        save_dict(data, post_file)
+        return jsonify({'status': 'success'})
+    return '''
+        <!doctype html>
+        <title>Upload new File</title>
+        <h1>Post</h1>
+        <form method=post enctype=multipart/form-data>
+          <label for="title"> Title </label>
+          <input type="text" name="title">
+          <label for="user"> User </label>
+          <input type="text" name="user">
+          <label for="file"> File </label>
+          <input type=file name=file>
+          <input type=submit value=Submit>
+        </form>
+        '''
     # if data:
     #     post_id = data['postid'][0]
     #     post_dir = None
