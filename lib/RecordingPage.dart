@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -26,6 +27,10 @@ class _RecordingPageState extends State<RecordingPage> {
   RecordingStage? stage;
   late DateTime recordStartTime;
   late Timer timer;
+  late Timer waveTimer;
+
+  List<int> waveArray1 = [];
+  List<int> waveArray2 = [];
 
   late SoundRecorder _recorder;
   String recording = Track.tempFile(WellKnownMediaFormats.adtsAac);
@@ -44,6 +49,17 @@ class _RecordingPageState extends State<RecordingPage> {
         setState(() {});
       }
     });
+    waveTimer = Timer.periodic(const Duration(milliseconds: 200), (Timer t) {
+      if (mounted) {
+        var rng = Random();
+        if (stage == RecordingStage.recording) {
+          setState(() {
+            waveArray1.add(rng.nextInt(36) + 6);
+            waveArray2.add(rng.nextInt(36) + 6);
+          });
+        }
+      }
+    });
 
     requestPermissions();
 
@@ -56,6 +72,7 @@ class _RecordingPageState extends State<RecordingPage> {
   @override
   void dispose() {
     timer.cancel();
+    waveTimer.cancel();
     _recorder.release();
     purgePlayers();
     super.dispose();
@@ -137,8 +154,10 @@ class _RecordingPageState extends State<RecordingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.purple,
+      backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.close),
@@ -147,9 +166,16 @@ class _RecordingPageState extends State<RecordingPage> {
       ),
       body: Container(
         width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+              colors: [Colors.blue, Colors.purple],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            SizedBox(height: 128),
             Text(
               getTitleText(),
               style: TextStyle(color: Colors.white, fontSize: 28),
@@ -170,12 +196,12 @@ class _RecordingPageState extends State<RecordingPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    WaveVisualization(),
+                    WaveVisualization(data: waveArray1),
                     widget.filePaths != null
                         ? Column(
                             children: [
                               SizedBox(height: 128),
-                              WaveVisualization(),
+                              WaveVisualization(data: waveArray2),
                             ],
                           )
                         : Container(),
