@@ -43,12 +43,6 @@ def upload_file(post_id):
             return frontend_file_path
 
 
-# @app.route('/')
-# def homepage():
-#
-#     return jsonify({'status': 'OK'})
-
-
 @app.route('/all_post', methods=['GET'])
 def all_post():
     directories = os.listdir(SAVE_DIR)
@@ -76,7 +70,10 @@ def single_post(post_id):
 
 @app.route('/new_post', methods=['POST'])
 def new_post():
-    data = request.get_json()
+    raw_data = request.form.to_dict(flat=False)
+    data = {}
+    for k, v in raw_data.items():
+        data[k] = v[0]
     directories = os.listdir(SAVE_DIR)
     post_id = str(len(directories))
     data['post_id'] = post_id
@@ -93,8 +90,10 @@ def new_post():
 
 @app.route('/new_comment/<int:post_id>', methods=['POST'])
 def new_comment(post_id):
-    data = request.get_json()
-
+    raw_data = request.form.to_dict(flat=False)
+    data = {}
+    for k, v in raw_data.items():
+        data[k] = v[0]
     post_dir = None
     for root, directory, files in os.walk(SAVE_DIR):
         if str(post_id) in directory:
@@ -121,8 +120,10 @@ def new_comment(post_id):
 
 @app.route('/new_track/<int:post_id>', methods=['POST'])
 def new_track(post_id):
-    data = request.get_json()
-
+    raw_data = request.form.to_dict(flat=False)
+    data = {}
+    for k, v in raw_data.items():
+        data[k] = v[0]
     post_dir = None
     for root, directory, files in os.walk(SAVE_DIR):
         if str(post_id) in directory:
