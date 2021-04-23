@@ -1,5 +1,7 @@
 // @dart=2.9
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:rechord/constants.dart';
 
 import 'RecordingPage.dart';
 import 'components/TrackCard.dart';
@@ -43,6 +45,17 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  List<dynamic> json = [];
+
+  Future<void> refresh() async {
+    var dio = Dio();
+
+    var response = await dio.get('$ip/all_post');
+    setState(() {
+      json = response.data['feed'];
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,18 +63,23 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text('reChord'),
         centerTitle: true,
       ),
-      body: Center(
-        child: ListView(
-          children: <Widget>[
-            TrackCard(),
-            TrackCard(),
-            TrackCard(),
-            TrackCard(),
-            TrackCard(),
-            TrackCard(),
-            TrackCard(),
-          ],
-        ),
+      body: RefreshIndicator(
+        onRefresh: refresh,
+        child: Center(
+            child: ListView.builder(
+          itemCount: json.length,
+          itemBuilder: (context, index) => TrackCard.fromJson(json[index], 0),
+        )
+            // child: ListView(
+            //   children: <Widget>[
+            //     TrackCard(
+            //       user: 'TheodoreSpeaks',
+            //       genre: 'Rock',
+            //       title: 'Created this funky bassline let me know what you think!',
+            //     ),
+            //   ],
+            // ),
+            ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.of(context).push(MaterialPageRoute(

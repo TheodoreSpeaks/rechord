@@ -9,6 +9,12 @@ import 'package:sounds/sounds.dart';
 enum RecordingStage { notRecording, recording, reviewRecording }
 
 class RecordingPage extends StatefulWidget {
+  final String? title;
+  final String? author;
+  final Track? track;
+
+  const RecordingPage({Key? key, this.title, this.author, this.track})
+      : super(key: key);
   @override
   _RecordingPageState createState() => _RecordingPageState();
 }
@@ -124,16 +130,31 @@ class _RecordingPageState extends State<RecordingPage> {
             ),
             SizedBox(height: 32.0),
             Text(
-              'Created a funky bassline, have fun with it yall',
+              widget.title != null ? widget.title! : 'Your new song!',
               style: TextStyle(color: Colors.white, fontSize: 16),
             ),
             SizedBox(height: 8.0),
             Text(
-              'By TheodoreSpeaks, CJRosas, JZhou, and Jack',
+              'By ${widget.author != null ? widget.author : 'you!'}',
               style:
                   TextStyle(color: Colors.white, fontStyle: FontStyle.italic),
             ),
-            Expanded(flex: 3, child: WaveVisualization()),
+            Expanded(
+                flex: 3,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    WaveVisualization(),
+                    widget.track != null
+                        ? Column(
+                            children: [
+                              SizedBox(height: 128),
+                              WaveVisualization(),
+                            ],
+                          )
+                        : Container(),
+                  ],
+                )),
             Spacer(flex: 1),
             stage != RecordingStage.reviewRecording
                 ? buildBottomRecording()

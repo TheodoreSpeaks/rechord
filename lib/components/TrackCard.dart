@@ -3,19 +3,49 @@ import 'package:sounds/sounds.dart';
 import 'dart:math';
 
 import '../SongPage.dart';
+import '../constants.dart';
 
 class TrackCard extends StatefulWidget {
-  final bool isEditable;
-  final Track? track;
+  final String title;
+  final String genre;
+  final String user;
+  final String filePath;
+  final int likes;
+  final String postId;
 
-  const TrackCard({Key? key, this.isEditable: false, this.track})
+  static const String defaultFilePath =
+      '../data/1/post_5eedf534-47e3-4f7a-91e5-ffd8c2c9fb58.aac';
+  const TrackCard(
+      {Key? key,
+      required this.title,
+      required this.genre,
+      this.filePath = defaultFilePath,
+      this.likes: 0,
+      this.postId: '0',
+      required this.user})
       : super(key: key);
+
+  TrackCard.fromJson(Map<String, dynamic> json, this.likes)
+      : title = json['title'],
+        genre = json['genre'],
+        user = json['user'],
+        postId = json['post_id'],
+        filePath = json['file'];
+
   @override
   _TrackCardState createState() => _TrackCardState();
 }
 
 class _TrackCardState extends State<TrackCard> {
   String currentGenre = 'Genre';
+  bool liked = false;
+
+  Future<Track> loadTrack() async {
+    Track track;
+    track = Track.fromURL('$ip/get_file?path=${widget.filePath}',
+        mediaFormat: WellKnownMediaFormats.adtsAac);
+    return track;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,100 +68,52 @@ class _TrackCardState extends State<TrackCard> {
             children: [
               Row(children: [
                 Spacer(),
-                widget.isEditable
-                    ? FloatingActionButton.extended(
-                        key: null,
-                        backgroundColor: Colors.white,
-                        onPressed: () {
-                          showModalBottomSheet(
-                              context: context,
-                              builder: (context) {
-                                return Container(
-                                    child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.all(16.0),
-                                      child: Text('Choose a genre:',
-                                          style: TextStyle(fontSize: 28)),
-                                    ),
-                                    BottomSelectableItem(
-                                        label: 'Country',
-                                        onTap: onBottomLabelTap),
-                                    BottomSelectableItem(
-                                        label: 'Rock', onTap: onBottomLabelTap),
-                                    BottomSelectableItem(
-                                        label: 'Indie',
-                                        onTap: onBottomLabelTap),
-                                    BottomSelectableItem(
-                                        label: 'Soul', onTap: onBottomLabelTap),
-                                  ],
-                                ));
-                              });
-                        },
-                        label: Text(currentGenre,
-                            style: TextStyle(color: Colors.purple)))
-                    : Row(
-                        children: [
-                          Icon(
-                            Icons.music_note,
-                            color: Colors.white,
-                          ),
-                          Text(
-                            'Rock',
-                            style: TextStyle(color: Colors.white),
-                          )
-                        ],
-                      ),
-              ]),
-              widget.isEditable
-                  ? Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            style: TextStyle(color: Colors.white),
-                            decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                enabledBorder: InputBorder.none,
-                                hintStyle: TextStyle(color: Colors.white54),
-                                hintText: 'Title your masterpiece!'),
-                          ),
-                        ),
-                      ],
-                    )
-                  : Text(
-                      'Created a funky bassline, let me know what you think!',
-                      style: TextStyle(color: Colors.white, fontSize: 20),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.music_note,
+                      color: Colors.white,
                     ),
+                    Text(
+                      widget.genre,
+                      style: TextStyle(color: Colors.white),
+                    )
+                  ],
+                ),
+              ]),
               Text(
-                '@TheodoreSpeaks',
+                widget.title,
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+              Text(
+                "@${widget.user}",
                 style: TextStyle(color: Colors.white, fontSize: 16),
               ),
               Spacer(),
               Row(
                 children: [
-                  widget.isEditable
-                      ? Expanded(child: SoundPlayerUI.fromTrack(widget.track))
-                      : Container(),
-                  widget.isEditable
-                      ? Container()
-                      : Padding(
-                          padding: const EdgeInsets.only(left: 8.0),
-                          child: Column(
-                            children: [
-                              Text(
-                                '36',
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: 18),
-                              ),
-                              Icon(
-                                Icons.favorite_border,
-                                color: Colors.white,
-                                size: 36,
-                              )
-                            ],
+                  Expanded(
+                      child:
+                          SoundPlayerUI.fromLoader((context) => loadTrack())),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: InkWell(
+                      onTap: () => setState(() => liked = !liked),
+                      child: Column(
+                        children: [
+                          Text(
+                            "${widget.likes + (liked ? 1 : 0)}",
+                            style: TextStyle(color: Colors.white, fontSize: 18),
                           ),
-                        )
+                          Icon(
+                            liked ? Icons.favorite : Icons.favorite_border,
+                            color: Colors.white,
+                            size: 36,
+                          )
+                        ],
+                      ),
+                    ),
+                  )
                 ],
               )
             ],

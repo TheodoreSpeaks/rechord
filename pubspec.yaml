@@ -32,6 +32,7 @@ dependencies:
   permission_handler: 
   select_form_field: ^2.0.0
   sounds: ^0.9.3
+  dio: ^4.0.0
 
 dev_dependencies:
   flutter_test:
