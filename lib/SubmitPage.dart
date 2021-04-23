@@ -87,6 +87,8 @@ class _SubmitPageState extends State<SubmitPage> {
                           child: TextFormField(
                             controller: _titleController,
                             style: TextStyle(color: Colors.white),
+                            keyboardType: TextInputType.multiline,
+                            maxLines: 5,
                             decoration: InputDecoration(
                                 enabledBorder: InputBorder.none,
                                 hintStyle: TextStyle(color: Colors.white70),
@@ -116,12 +118,15 @@ class _SubmitPageState extends State<SubmitPage> {
                                             BottomSelectableItem(
                                                 label: 'Country',
                                                 onTap: onBottomLabelTap),
+                                            Divider(),
                                             BottomSelectableItem(
                                                 label: 'Rock',
                                                 onTap: onBottomLabelTap),
+                                            Divider(),
                                             BottomSelectableItem(
                                                 label: 'Indie',
                                                 onTap: onBottomLabelTap),
+                                            Divider(),
                                             BottomSelectableItem(
                                                 label: 'Soul',
                                                 onTap: onBottomLabelTap),

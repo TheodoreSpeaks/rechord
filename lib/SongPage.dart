@@ -358,18 +358,21 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
               Spacer(),
               Padding(
                 padding: const EdgeInsets.only(left: 8.0),
-                child: Column(
-                  children: [
-                    Text(
-                      '${widget.likes + (liked ? 1 : 0)}',
-                      style: TextStyle(color: Colors.white, fontSize: 18),
-                    ),
-                    Icon(
-                      liked ? Icons.favorite : Icons.favorite_border,
-                      color: Colors.white,
-                      size: 36,
-                    )
-                  ],
+                child: InkWell(
+                  onTap: () => setState(() => liked = !liked),
+                  child: Column(
+                    children: [
+                      Text(
+                        '${widget.likes + (liked ? 1 : 0)}',
+                        style: TextStyle(color: Colors.white, fontSize: 18),
+                      ),
+                      Icon(
+                        liked ? Icons.favorite : Icons.favorite_border,
+                        color: Colors.white,
+                        size: 36,
+                      )
+                    ],
+                  ),
                 ),
               )
             ],
@@ -396,7 +399,7 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
   }
 }
 
-class TrackComment extends StatelessWidget {
+class TrackComment extends StatefulWidget {
   final String title;
   final String user;
   final int likes;
@@ -411,28 +414,37 @@ class TrackComment extends StatelessWidget {
       : super(key: key);
 
   @override
+  _TrackCommentState createState() => _TrackCommentState();
+}
+
+class _TrackCommentState extends State<TrackComment> {
+  bool liked = false;
+  @override
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(padding: EdgeInsets.all(4), child: Text('@$user')),
+          Padding(padding: EdgeInsets.all(4), child: Text('@${widget.user}')),
           Padding(
               padding: EdgeInsets.all(4),
-              child: Text(title, style: TextStyle(fontSize: 18))),
+              child: Text(widget.title, style: TextStyle(fontSize: 18))),
           SizedBox(height: 8),
-          Row(
-            children: [
-              Icon(Icons.volume_up),
-              Spacer(),
-              Icon(
-                Icons.favorite_border,
-                size: 24,
-              ),
-              SizedBox(width: 8.0),
-              Text('$likes')
-            ],
+          InkWell(
+            onTap: () => setState(() => liked = !liked),
+            child: Row(
+              children: [
+                Icon(Icons.volume_up),
+                Spacer(),
+                Icon(
+                  liked ? Icons.favorite : Icons.favorite_border,
+                  size: 24,
+                ),
+                SizedBox(width: 8.0),
+                Text('${widget.likes + (liked ? 1 : 0)}')
+              ],
+            ),
           )
         ],
       ),
@@ -440,7 +452,7 @@ class TrackComment extends StatelessWidget {
   }
 }
 
-class Comment extends StatelessWidget {
+class Comment extends StatefulWidget {
   final String title;
   final String user;
   final int likes;
@@ -448,6 +460,13 @@ class Comment extends StatelessWidget {
   const Comment(
       {Key? key, required this.title, required this.user, required this.likes})
       : super(key: key);
+
+  @override
+  _CommentState createState() => _CommentState();
+}
+
+class _CommentState extends State<Comment> {
+  bool liked = false;
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -455,24 +474,25 @@ class Comment extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('@$user'),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(this.title, style: TextStyle(fontSize: 18)),
-                ),
-                Icon(
-                  Icons.favorite_border,
-                  size: 24,
-                ),
-                SizedBox(width: 8.0),
-                Text('$likes')
-              ],
+            Text('@${widget.user}'),
+            InkWell(
+              onTap: () => setState(() => liked = !liked),
+              child: Row(
+                children: [
+                  Expanded(
+                    child:
+                        Text(this.widget.title, style: TextStyle(fontSize: 18)),
+                  ),
+                  Icon(
+                    liked ? Icons.favorite : Icons.favorite_border,
+                    size: 24,
+                  ),
+                  SizedBox(width: 8.0),
+                  Text('${widget.likes + (liked ? 1 : 0)}')
+                ],
+              ),
             ),
             SizedBox(height: 8),
-            Row(
-              children: [],
-            )
           ],
         ));
   }
