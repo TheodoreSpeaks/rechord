@@ -65,7 +65,7 @@ def all_post():
 def single_post(post_id):
     post_dir = SAVE_DIR + str(post_id) + '/'
     if not os.path.isdir(post_dir):
-        return jsonify({'status': 'no such post with post_id %s'% (str(post_id))})
+        return jsonify({'status': 'no such post with post_id %s' % (str(post_id))})
     post_file = post_dir + 'post_file'
     post = load_dict(post_file)
     return jsonify(post)
