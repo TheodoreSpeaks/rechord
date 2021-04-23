@@ -85,16 +85,16 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
       tracks.add(track);
     }
 
-    for (Track track in tracks) {
+    for (Track track in tracks.reversed) {
       SoundPlayer player = SoundPlayer.noUI();
       player.play(track);
       players.add(player);
+      print(players);
     }
   }
 
   void purgePlayers() async {
-    var toPurge = players;
-    for (SoundPlayer player in toPurge) {
+    for (SoundPlayer player in players) {
       await player.release();
     }
     players = [];
@@ -103,7 +103,11 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
   void stopPlayer() async {
     // await _player.stopPlayer();
     for (SoundPlayer player in players) {
-      if (!player.isStopped) await player.stop();
+      if (!player.isStopped) {
+        await player.pause();
+        await player.stop();
+      }
+      print('player is stopped: ${player.isStopped}');
     }
     purgePlayers();
     setState(() {});
@@ -339,7 +343,7 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
               FloatingActionButton(
                 key: null,
                 onPressed: () {
-                  if (playing) {
+                  if (!playing) {
                     startPlayer();
                   } else {
                     stopPlayer();

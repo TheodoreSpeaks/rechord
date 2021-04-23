@@ -125,7 +125,10 @@ class _RecordingPageState extends State<RecordingPage> {
   void stopPlayer() async {
     // await _player.stopPlayer();
     for (SoundPlayer player in players) {
-      if (!player.isStopped) await player.stop();
+      if (!player.isStopped) {
+        await player.pause();
+        await player.stop();
+      }
     }
     purgePlayers();
     setState(() {});
