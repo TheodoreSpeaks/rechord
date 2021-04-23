@@ -37,9 +37,12 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
   late TabController _tabController;
   late TextEditingController _commentController;
   late bool liked;
+  bool playing = false;
 
   List<dynamic> commentsJson = [];
   List<dynamic> tracksJson = [];
+
+  List<SoundPlayer> players = [];
 
   @override
   void initState() {
@@ -60,6 +63,50 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
     track = Track.fromURL('$ip/get_file?path=${widget.filePath}',
         mediaFormat: WellKnownMediaFormats.adtsAac);
     return track;
+  }
+
+  List<String> getTrackPaths() {
+    List<String> toReturn = [widget.filePath];
+
+    for (dynamic json in tracksJson) {
+      toReturn.add(json['file']);
+    }
+    return toReturn;
+  }
+
+  void startPlayer() async {
+    // TODO: might break?
+    purgePlayers();
+    List<Track> tracks = [];
+    for (String filePath in getTrackPaths()) {
+      Track track;
+      track = Track.fromURL('$ip/get_file?path=$filePath',
+          mediaFormat: WellKnownMediaFormats.adtsAac);
+      tracks.add(track);
+    }
+
+    for (Track track in tracks) {
+      SoundPlayer player = SoundPlayer.noUI();
+      player.play(track);
+      players.add(player);
+    }
+  }
+
+  void purgePlayers() async {
+    var toPurge = players;
+    for (SoundPlayer player in toPurge) {
+      await player.release();
+    }
+    players = [];
+  }
+
+  void stopPlayer() async {
+    // await _player.stopPlayer();
+    for (SoundPlayer player in players) {
+      if (!player.isStopped) await player.stop();
+    }
+    purgePlayers();
+    setState(() {});
   }
 
   Future<void> refresh() async {
@@ -145,7 +192,7 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
               builder: (context) => RecordingPage(
                 title: widget.title,
                 author: widget.user,
-                filePaths: [widget.filePath],
+                filePaths: getTrackPaths(),
                 postId: widget.postId,
               ),
             ));
@@ -287,8 +334,24 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
           Spacer(),
           Row(
             children: [
-              Expanded(
-                  child: SoundPlayerUI.fromLoader((context) => loadTrack())),
+              // Expanded(
+              //     child: SoundPlayerUI.fromLoader((context) => loadTrack())),
+              FloatingActionButton(
+                key: null,
+                onPressed: () {
+                  if (playing) {
+                    startPlayer();
+                  } else {
+                    stopPlayer();
+                  }
+                  setState(() {
+                    playing = !playing;
+                  });
+                },
+                child: Icon(playing ? Icons.pause : Icons.play_arrow),
+                backgroundColor: Colors.lightGreen,
+              ),
+              Spacer(),
               Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: Column(
