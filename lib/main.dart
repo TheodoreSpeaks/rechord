@@ -47,6 +47,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<dynamic> json = [];
+  String genre = 'All Genres';
 
   Future<void> refresh() async {
     var dio = Dio();
@@ -65,17 +66,85 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    List<dynamic> filteredJson = [];
+    for (dynamic entry in json) {
+      if (genre == 'All Genres' || entry['genre'] == genre) {
+        filteredJson.add(entry);
+      }
+    }
     return Scaffold(
       appBar: AppBar(
-        title: Text('reChord'),
+        title: Text(genre),
+      ),
+      drawer: Drawer(
+        // Add a ListView to the drawer. This ensures the user can scroll
+        // through the options in the drawer if there isn't enough vertical
+        // space to fit everything.
+        child: ListView(
+          // Important: Remove any padding from the ListView.
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            DrawerHeader(
+              child: Text(
+                'Choose a Genre:',
+                style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
+              ),
+              decoration: BoxDecoration(
+                color: Colors.purple,
+              ),
+            ),
+            ListTile(
+              title: Text('All Genres'),
+              onTap: () {
+                setState(() => genre = 'All Genres');
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: Text('Country'),
+              onTap: () {
+                setState(() => genre = 'Country');
+
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: Text('Rock'),
+              onTap: () {
+                setState(() => genre = 'Rock');
+
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: Text('Indie'),
+              onTap: () {
+                setState(() => genre = 'Indie');
+
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: Text('Soul'),
+              onTap: () {
+                setState(() => genre = 'Soul');
+
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
       ),
       body: RefreshIndicator(
         onRefresh: refresh,
         child: Center(
             child: ListView.builder(
-          itemCount: json.length,
+          itemCount: filteredJson.length,
           itemBuilder: (context, index) =>
-              TrackCard.fromJson(json.reversed.toList()[index], 0),
+              TrackCard.fromJson(filteredJson.reversed.toList()[index], 0),
         )
             // child: ListView(
             //   children: <Widget>[
@@ -92,6 +161,7 @@ class _MyHomePageState extends State<MyHomePage> {
         onPressed: () => Navigator.of(context).push(MaterialPageRoute(
           builder: (context) => RecordingPage(),
         )),
+        backgroundColor: Colors.lightGreen,
         heroTag: null,
         label: Text('Create Track'),
         icon: Icon(Icons.add),
