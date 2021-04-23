@@ -1,9 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:sounds/sounds.dart';
 import 'dart:math';
 
 import '../SongPage.dart';
 
-class TrackCard extends StatelessWidget {
+class TrackCard extends StatefulWidget {
+  final bool isEditable;
+  final Track? track;
+
+  const TrackCard({Key? key, this.isEditable: false, this.track})
+      : super(key: key);
+  @override
+  _TrackCardState createState() => _TrackCardState();
+}
+
+class _TrackCardState extends State<TrackCard> {
+  String currentGenre = 'Genre';
+
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -19,25 +32,77 @@ class TrackCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(32)),
           padding: EdgeInsets.all(16.0),
           margin: EdgeInsets.only(left: 8.0, right: 8.0, top: 16.0),
-          height: 210,
+          height: 250,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(children: [
                 Spacer(),
-                Icon(
-                  Icons.music_note,
-                  color: Colors.white,
-                ),
-                Text(
-                  'Rock',
-                  style: TextStyle(color: Colors.white),
-                )
+                widget.isEditable
+                    ? FloatingActionButton.extended(
+                        key: null,
+                        backgroundColor: Colors.white,
+                        onPressed: () {
+                          showModalBottomSheet(
+                              context: context,
+                              builder: (context) {
+                                return Container(
+                                    child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: Text('Choose a genre:',
+                                          style: TextStyle(fontSize: 28)),
+                                    ),
+                                    BottomSelectableItem(
+                                        label: 'Country',
+                                        onTap: onBottomLabelTap),
+                                    BottomSelectableItem(
+                                        label: 'Rock', onTap: onBottomLabelTap),
+                                    BottomSelectableItem(
+                                        label: 'Indie',
+                                        onTap: onBottomLabelTap),
+                                    BottomSelectableItem(
+                                        label: 'Soul', onTap: onBottomLabelTap),
+                                  ],
+                                ));
+                              });
+                        },
+                        label: Text(currentGenre,
+                            style: TextStyle(color: Colors.purple)))
+                    : Row(
+                        children: [
+                          Icon(
+                            Icons.music_note,
+                            color: Colors.white,
+                          ),
+                          Text(
+                            'Rock',
+                            style: TextStyle(color: Colors.white),
+                          )
+                        ],
+                      ),
               ]),
-              Text(
-                'Created a funky bassline, let me know what you think!',
-                style: TextStyle(color: Colors.white, fontSize: 20),
-              ),
+              widget.isEditable
+                  ? Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            style: TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                                border: OutlineInputBorder(),
+                                enabledBorder: InputBorder.none,
+                                hintStyle: TextStyle(color: Colors.white54),
+                                hintText: 'Title your masterpiece!'),
+                          ),
+                        ),
+                      ],
+                    )
+                  : Text(
+                      'Created a funky bassline, let me know what you think!',
+                      style: TextStyle(color: Colors.white, fontSize: 20),
+                    ),
               Text(
                 '@TheodoreSpeaks',
                 style: TextStyle(color: Colors.white, fontSize: 16),
@@ -45,31 +110,28 @@ class TrackCard extends StatelessWidget {
               Spacer(),
               Row(
                 children: [
-                  FloatingActionButton(
-                    heroTag: null,
-                    onPressed: () {},
-                    backgroundColor: Colors.lightGreen,
-                    child: Icon(
-                      Icons.play_arrow,
-                      size: 36,
-                    ),
-                  ),
-                  Spacer(),
-                  buildTrackVisualization(),
-                  Spacer(),
-                  Column(
-                    children: [
-                      Text(
-                        '36',
-                        style: TextStyle(color: Colors.white, fontSize: 18),
-                      ),
-                      Icon(
-                        Icons.favorite_border,
-                        color: Colors.white,
-                        size: 36,
-                      )
-                    ],
-                  )
+                  widget.isEditable
+                      ? Expanded(child: SoundPlayerUI.fromTrack(widget.track))
+                      : Container(),
+                  widget.isEditable
+                      ? Container()
+                      : Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Column(
+                            children: [
+                              Text(
+                                '36',
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 18),
+                              ),
+                              Icon(
+                                Icons.favorite_border,
+                                color: Colors.white,
+                                size: 36,
+                              )
+                            ],
+                          ),
+                        )
                 ],
               )
             ],
@@ -77,19 +139,36 @@ class TrackCard extends StatelessWidget {
     );
   }
 
-  Widget buildTrackVisualization() {
-    List<Widget> lines = [];
-    for (int i = 0; i < 35; i++) {
-      lines.add(Container(
-        margin: EdgeInsets.all(1),
-        decoration: BoxDecoration(
-            color: Colors.white70, borderRadius: BorderRadius.circular(30)),
-        width: 4,
-        height: 24 * (sin(i * pi / 4) + 1),
-      ));
-    }
-    return Row(
-      children: lines,
+  void onBottomLabelTap(String label) {
+    setState(() {
+      currentGenre = label;
+    });
+  }
+}
+
+class BottomSelectableItem extends StatelessWidget {
+  final String label;
+  final Function onTap;
+  const BottomSelectableItem({
+    Key? key,
+    required this.label,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        onTap(label);
+        Navigator.of(context).pop();
+      },
+      child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.only(bottom: 8.0, left: 16),
+          child: Text(
+            label,
+            style: TextStyle(fontSize: 20),
+          )),
     );
   }
 }

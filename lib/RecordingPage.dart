@@ -1,9 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_sound/flutter_sound.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:rechord/SubmitPage.dart';
+import 'package:rechord/components/WaveVisualization.dart';
+import 'package:sounds/sounds.dart';
 
 enum RecordingStage { notRecording, recording, reviewRecording }
 
@@ -17,11 +18,14 @@ class _RecordingPageState extends State<RecordingPage> {
   late DateTime recordStartTime;
   late Timer timer;
 
-  late FlutterSoundRecorder _recorder;
-  late FlutterSoundPlayer _player;
-  Track? track;
+  late SoundRecorder _recorder;
+  late SoundPlayer _player;
+  // Track? track;
 
   static const String recordTrack = 'recorded_sound';
+  // static const Codec recordCodec = Codec.aacADTS;
+  String recording = Track.tempFile(WellKnownMediaFormats.adtsAac);
+  Track? track;
 
   @override
   void initState() {
@@ -37,26 +41,19 @@ class _RecordingPageState extends State<RecordingPage> {
 
     requestPermissions();
 
-    _recorder = FlutterSoundRecorder();
-    _recorder.openAudioSession().then((value) {
-      // setState(() {
-      //   _mRecorderIsInited = true;
-      // });
-    });
+    track =
+        Track.fromFile(recording, mediaFormat: WellKnownMediaFormats.adtsAac);
 
-    _player = FlutterSoundPlayer();
-    _player.openAudioSession().then((value) {
-      // setState(() {
-      //   _mPlayerIsInited = true;
-      // });
-    });
+    _recorder = SoundRecorder();
+
+    _player = SoundPlayer.noUI();
   }
 
   @override
   void dispose() {
     timer.cancel();
-    _recorder.closeAudioSession();
-    _player.closeAudioSession();
+    _recorder.release();
+    _player.release();
     super.dispose();
   }
 
@@ -79,30 +76,29 @@ class _RecordingPageState extends State<RecordingPage> {
   }
 
   void record() async {
-    await _recorder.startRecorder(
-      toFile: recordTrack,
-      codec: Codec.aacADTS,
-    );
+    _recorder.record(track);
   }
 
   void stopRecorder() async {
-    await _recorder.stopRecorder();
-    track = Track(trackPath: recordTrack, codec: Codec.aacADTS);
+    _recorder.stop();
+    // await _recorder.stopRecorder();
+    // track = Track(trackPath: recordTrack, codec: recordCodec);
     setState(() {});
   }
 
   void startPlayer() async {
-    await _player.startPlayer(
-        fromURI: recordTrack,
-        codec: Codec.aacADTS,
-        whenFinished: () {
-          setState(() {});
-        });
+    // await _player.startPlayer(
+    //     fromURI: recordTrack,
+    //     codec: recordCodec,
+    //     whenFinished: () {
+    //       setState(() {});
+    //     });
+
     setState(() {});
   }
 
   void stopPlayer() async {
-    await _player.stopPlayer();
+    // await _player.stopPlayer();
     setState(() {});
   }
 
@@ -137,12 +133,7 @@ class _RecordingPageState extends State<RecordingPage> {
               style:
                   TextStyle(color: Colors.white, fontStyle: FontStyle.italic),
             ),
-            Expanded(
-                flex: 3,
-                child: Divider(
-                  color: Colors.white,
-                  thickness: 8,
-                )),
+            Expanded(flex: 3, child: WaveVisualization()),
             Spacer(flex: 1),
             stage != RecordingStage.reviewRecording
                 ? buildBottomRecording()
@@ -258,7 +249,7 @@ class _RecordingPageState extends State<RecordingPage> {
             InkWell(
               onTap: () => Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => SubmitPage(
-                  path: recordTrack,
+                  track: track!,
                 ),
               )),
               child: Container(

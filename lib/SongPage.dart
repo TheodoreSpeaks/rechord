@@ -71,7 +71,7 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
                         padding: EdgeInsets.all(16.0),
                         scrollDirection: Axis.vertical,
                         itemBuilder: (BuildContext context, int index) {
-                          return Track();
+                          return TrackComment();
                         }),
                   ),
                   Expanded(
@@ -209,7 +209,7 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
   }
 }
 
-class Track extends StatelessWidget {
+class TrackComment extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
