@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:rechord/SubmitPage.dart';
 import 'package:rechord/components/WaveVisualization.dart';
+import 'package:rechord/constants.dart';
 import 'package:sounds/sounds.dart';
 
 enum RecordingStage { notRecording, recording, reviewRecording }
@@ -11,9 +12,11 @@ enum RecordingStage { notRecording, recording, reviewRecording }
 class RecordingPage extends StatefulWidget {
   final String? title;
   final String? author;
-  final Track? track;
+  final String? postId;
+  final List<String>? filePaths;
 
-  const RecordingPage({Key? key, this.title, this.author, this.track})
+  const RecordingPage(
+      {Key? key, this.title, this.author, this.filePaths, this.postId})
       : super(key: key);
   @override
   _RecordingPageState createState() => _RecordingPageState();
@@ -25,13 +28,10 @@ class _RecordingPageState extends State<RecordingPage> {
   late Timer timer;
 
   late SoundRecorder _recorder;
-  late SoundPlayer _player;
-  // Track? track;
-
-  static const String recordTrack = 'recorded_sound';
-  // static const Codec recordCodec = Codec.aacADTS;
   String recording = Track.tempFile(WellKnownMediaFormats.adtsAac);
   Track? track;
+
+  List<SoundPlayer> players = [];
 
   @override
   void initState() {
@@ -51,15 +51,13 @@ class _RecordingPageState extends State<RecordingPage> {
         Track.fromFile(recording, mediaFormat: WellKnownMediaFormats.adtsAac);
 
     _recorder = SoundRecorder();
-
-    _player = SoundPlayer.noUI();
   }
 
   @override
   void dispose() {
     timer.cancel();
     _recorder.release();
-    _player.release();
+    purgePlayers();
     super.dispose();
   }
 
@@ -93,18 +91,43 @@ class _RecordingPageState extends State<RecordingPage> {
   }
 
   void startPlayer() async {
-    // await _player.startPlayer(
-    //     fromURI: recordTrack,
-    //     codec: recordCodec,
-    //     whenFinished: () {
-    //       setState(() {});
-    //     });
+    // TODO: might break?
+    purgePlayers();
+    List<Track> tracks = [];
+    for (String filePath in widget.filePaths!) {
+      // var saveToFile = Track.tempFile(WellKnownMediaFormats.adtsAac);
+      // var saveToFile =
 
-    setState(() {});
+      // await Downloader.download('$ip/get_file?path=$filePath', saveToFile);
+
+      // var track = Track.fromAsset(saveToFile);
+      Track track;
+      track = Track.fromURL('$ip/get_file?path=$filePath',
+          mediaFormat: WellKnownMediaFormats.adtsAac);
+      tracks.add(track);
+    }
+
+    for (Track track in tracks) {
+      SoundPlayer player = SoundPlayer.noUI();
+      player.play(track);
+      players.add(player);
+    }
+  }
+
+  void purgePlayers() async {
+    var toPurge = players;
+    for (SoundPlayer player in toPurge) {
+      await player.release();
+    }
+    players = [];
   }
 
   void stopPlayer() async {
     // await _player.stopPlayer();
+    for (SoundPlayer player in players) {
+      await player.stop();
+    }
+    purgePlayers();
     setState(() {});
   }
 
@@ -145,7 +168,7 @@ class _RecordingPageState extends State<RecordingPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     WaveVisualization(),
-                    widget.track != null
+                    widget.filePaths != null
                         ? Column(
                             children: [
                               SizedBox(height: 128),
@@ -184,10 +207,12 @@ class _RecordingPageState extends State<RecordingPage> {
                 stage = RecordingStage.recording;
                 recordStartTime = DateTime.now();
                 record();
+                startPlayer();
                 break;
               case RecordingStage.recording:
                 stage = RecordingStage.reviewRecording;
                 stopRecorder();
+                stopPlayer();
                 setState(() {});
                 break;
               case RecordingStage.reviewRecording:
@@ -271,6 +296,7 @@ class _RecordingPageState extends State<RecordingPage> {
               onTap: () => Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => SubmitPage(
                   track: track!,
+                  postId: widget.postId,
                 ),
               )),
               child: Container(

@@ -7,8 +7,10 @@ import 'package:rechord/constants.dart';
 
 class SubmitPage extends StatefulWidget {
   final Track track;
+  final String? postId;
 
-  const SubmitPage({Key? key, required this.track}) : super(key: key);
+  const SubmitPage({Key? key, required this.track, this.postId})
+      : super(key: key);
 
   @override
   _SubmitPageState createState() => _SubmitPageState();
@@ -27,19 +29,27 @@ class _SubmitPageState extends State<SubmitPage> {
   }
 
   void submitPost() async {
-    print(widget.track.path);
-
-    FormData formData = FormData.fromMap({
-      "file": await MultipartFile.fromFile(widget.track.path),
-      "genre": currentGenre,
-      "title": _titleController.text,
-      "user": "TheodoreSpeaks"
-    });
-
     var dio = Dio();
 
-    var response = await dio.post('$ip/new_post', data: formData);
-    print(response.data.toString());
+    if (widget.postId == null) {
+      FormData formData = FormData.fromMap({
+        "file": await MultipartFile.fromFile(widget.track.path),
+        "genre": currentGenre,
+        "title": _titleController.text,
+        "user": "TheodoreSpeaks"
+      });
+
+      var response = await dio.post('$ip/new_post', data: formData);
+    } else {
+      FormData formData = FormData.fromMap({
+        "file": await MultipartFile.fromFile(widget.track.path),
+        "title": _titleController.text,
+        "user": "TheodoreSpeaks"
+      });
+
+      var response =
+          await dio.post('$ip/new_track/${widget.postId}', data: formData);
+    }
   }
 
   @override
@@ -83,41 +93,45 @@ class _SubmitPageState extends State<SubmitPage> {
                                 hintText: 'Title your masterpiece!'),
                           ),
                         ),
-                        FloatingActionButton.extended(
-                            key: null,
-                            backgroundColor: Colors.white,
-                            onPressed: () {
-                              showModalBottomSheet(
-                                  context: context,
-                                  builder: (context) {
-                                    return Container(
-                                        child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.all(16.0),
-                                          child: Text('Choose a genre:',
-                                              style: TextStyle(fontSize: 28)),
-                                        ),
-                                        BottomSelectableItem(
-                                            label: 'Country',
-                                            onTap: onBottomLabelTap),
-                                        BottomSelectableItem(
-                                            label: 'Rock',
-                                            onTap: onBottomLabelTap),
-                                        BottomSelectableItem(
-                                            label: 'Indie',
-                                            onTap: onBottomLabelTap),
-                                        BottomSelectableItem(
-                                            label: 'Soul',
-                                            onTap: onBottomLabelTap),
-                                      ],
-                                    ));
-                                  });
-                            },
-                            label: Text(currentGenre,
-                                style: TextStyle(color: Colors.purple)))
+                        widget.postId == null
+                            ? FloatingActionButton.extended(
+                                key: null,
+                                backgroundColor: Colors.white,
+                                onPressed: () {
+                                  showModalBottomSheet(
+                                      context: context,
+                                      builder: (context) {
+                                        return Container(
+                                            child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.all(16.0),
+                                              child: Text('Choose a genre:',
+                                                  style:
+                                                      TextStyle(fontSize: 28)),
+                                            ),
+                                            BottomSelectableItem(
+                                                label: 'Country',
+                                                onTap: onBottomLabelTap),
+                                            BottomSelectableItem(
+                                                label: 'Rock',
+                                                onTap: onBottomLabelTap),
+                                            BottomSelectableItem(
+                                                label: 'Indie',
+                                                onTap: onBottomLabelTap),
+                                            BottomSelectableItem(
+                                                label: 'Soul',
+                                                onTap: onBottomLabelTap),
+                                          ],
+                                        ));
+                                      });
+                                },
+                                label: Text(currentGenre,
+                                    style: TextStyle(color: Colors.purple)))
+                            : Container()
                       ]),
                     ),
                     Spacer(),

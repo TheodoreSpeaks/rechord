@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:rechord/RecordingPage.dart';
 import 'dart:math';
 
 import 'package:sounds/sounds.dart';
@@ -45,6 +48,7 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
     _tabController.addListener(() {
       setState(() {});
     });
+    refresh();
 
     _commentController = TextEditingController();
 
@@ -137,6 +141,14 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
         onPressed: () {
           if (_tabController.index == 0) {
             // TODO: send to collaborate screen
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => RecordingPage(
+                title: widget.title,
+                author: widget.user,
+                filePaths: [widget.filePath],
+                postId: widget.postId,
+              ),
+            ));
           } else {
             showCommentDialog(context);
           }
@@ -199,7 +211,13 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
                           padding: EdgeInsets.all(16.0),
                           scrollDirection: Axis.vertical,
                           itemBuilder: (BuildContext context, int index) {
-                            return TrackComment();
+                            dynamic json = tracksJson[index];
+                            return TrackComment(
+                              title: json['title'],
+                              likes: 0,
+                              filePath: json['file'],
+                              user: json['user'],
+                            );
                           }),
                     ),
                   ),
