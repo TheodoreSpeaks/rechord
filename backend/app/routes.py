@@ -6,6 +6,7 @@ from werkzeug.utils import secure_filename
 
 
 SAVE_DIR = "../data/"
+FILE_DIR = "./data"
 if not os.path.isdir(SAVE_DIR):
     os.mkdir(SAVE_DIR)
 
@@ -34,10 +35,12 @@ def upload_file(post_id):
             return None
         if file:
             path = SAVE_DIR + str(post_id) + '/'
+            frontend_file_path = FILE_DIR + str(post_id) + '/'
             filename = 'post_' + secure_filename(file.filename)
             file_path = os.path.join(path, filename)
             file.save(file_path)
-            return file_path
+            frontend_file_path = os.path.join(frontend_file_path, filename)
+            return frontend_file_path
 
 
 # @app.route('/')
