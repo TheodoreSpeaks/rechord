@@ -13,11 +13,20 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController?.addListener(() {
+      setState(() {});
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {},
+        label:
+            Text(_tabController?.index == 0 ? 'Add a track' : 'Add a comment'),
+        icon: Icon(Icons.add),
+      ),
       body: Column(
         children: [
           Expanded(
@@ -63,7 +72,6 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
               children: [
                 Column(children: [
                   Expanded(
-                    flex: 8,
                     child: ListView.separated(
                         itemCount: getTrackCount(),
                         separatorBuilder: (BuildContext context, int index) =>
@@ -74,19 +82,6 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
                           return TrackComment();
                         }),
                   ),
-                  Expanded(
-                    flex: 2,
-                    child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 10.0, horizontal: 16.0),
-                        child: AspectRatio(
-                          aspectRatio: 42 / 9,
-                          child: FloatingActionButton.extended(
-                              heroTag: null,
-                              onPressed: () {},
-                              label: Text('Add a new track')),
-                        )),
-                  )
                 ]),
                 Column(children: [
                   Expanded(
@@ -101,19 +96,6 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
                           return Comment();
                         }),
                   ),
-                  Expanded(
-                    flex: 2,
-                    child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 10.0, horizontal: 16.0),
-                        child: AspectRatio(
-                          aspectRatio: 42 / 9,
-                          child: FloatingActionButton.extended(
-                              heroTag: null,
-                              onPressed: () {},
-                              label: Text('Add a comment')),
-                        )),
-                  )
                 ]),
               ],
             ),
@@ -213,22 +195,6 @@ class TrackComment extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(10),
-            topRight: Radius.circular(10),
-            bottomLeft: Radius.circular(10),
-            bottomRight: Radius.circular(10)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.5),
-            spreadRadius: 5,
-            blurRadius: 7,
-            offset: Offset(0, 3), // changes position of shadow
-          ),
-        ],
-      ),
       padding: EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -261,23 +227,30 @@ class Comment extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(10),
-              topRight: Radius.circular(10),
-              bottomLeft: Radius.circular(10),
-              bottomRight: Radius.circular(10)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.5),
-              spreadRadius: 5,
-              blurRadius: 7,
-              offset: Offset(0, 3), // changes position of shadow
-            ),
-          ],
-        ),
         padding: EdgeInsets.all(16),
-        child: Text("sample text"));
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('@CJRosas'),
+            Row(
+              children: [
+                Expanded(
+                  child: Text('Got a simple drum track for that!',
+                      style: TextStyle(fontSize: 18)),
+                ),
+                Icon(
+                  Icons.favorite_border,
+                  size: 24,
+                ),
+                SizedBox(width: 8.0),
+                Text('31')
+              ],
+            ),
+            SizedBox(height: 8),
+            Row(
+              children: [],
+            )
+          ],
+        ));
   }
 }
