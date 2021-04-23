@@ -6,6 +6,8 @@ from werkzeug.utils import secure_filename
 
 
 SAVE_DIR = "app/data/"
+if not os.path.isdir(SAVE_DIR):
+    os.mkdir(SAVE_DIR)
 
 
 def save_dict(dict, name):
