@@ -1,13 +1,37 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 
+import 'package:sounds/sounds.dart';
+
+import 'constants.dart';
+
 class SongPage extends StatefulWidget {
+  final String title;
+  final String user;
+  final String genre;
+  final String filePath;
+  final int likes;
+  final bool isLiked;
+  final String postId;
+
+  const SongPage(
+      {Key? key,
+      required this.title,
+      required this.user,
+      required this.genre,
+      required this.filePath,
+      required this.likes,
+      required this.isLiked,
+      required this.postId})
+      : super(key: key);
+
   @override
   _SongPageState createState() => _SongPageState();
 }
 
 class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
   TabController? _tabController;
+  late bool liked;
 
   @override
   void initState() {
@@ -16,7 +40,18 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
     _tabController?.addListener(() {
       setState(() {});
     });
+
+    liked = widget.isLiked;
   }
+
+  Future<Track> loadTrack() async {
+    Track track;
+    track = Track.fromURL('$ip/get_file?path=${widget.filePath}',
+        mediaFormat: WellKnownMediaFormats.adtsAac);
+    return track;
+  }
+
+  void refresh() {}
 
   @override
   Widget build(BuildContext context) {
@@ -112,7 +147,7 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
 
   Container buildHeader() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       width: double.infinity,
       height: double.infinity,
       // color: Colors.purple,
@@ -130,45 +165,37 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
             backgroundColor: Colors.transparent,
           ),
           Text(
-            "Created this funky bassline, have fun with it y'all!",
+            widget.title,
             style: TextStyle(color: Colors.white, fontSize: 20),
           ),
           SizedBox(height: 10.0),
           Text(
-            '@TheodoreSpeaks',
+            '@${widget.user}',
             style: TextStyle(color: Colors.white, fontSize: 16),
           ),
           Spacer(),
           Row(
             children: [
-              FloatingActionButton(
-                heroTag: null,
-                onPressed: () {},
-                backgroundColor: Colors.lightGreen,
-                child: Icon(
-                  Icons.play_arrow,
-                  size: 36,
+              Expanded(
+                  child: SoundPlayerUI.fromLoader((context) => loadTrack())),
+              Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Column(
+                  children: [
+                    Text(
+                      '${widget.likes + (liked ? 1 : 0)}',
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                    Icon(
+                      liked ? Icons.favorite : Icons.favorite_border,
+                      color: Colors.white,
+                      size: 36,
+                    )
+                  ],
                 ),
-              ),
-              Spacer(),
-              buildTrackVisualization(),
-              Spacer(),
-              Column(
-                children: [
-                  Text(
-                    '36',
-                    style: TextStyle(color: Colors.white, fontSize: 18),
-                  ),
-                  Icon(
-                    Icons.favorite_border,
-                    color: Colors.white,
-                    size: 36,
-                  )
-                ],
               )
             ],
           ),
-          Spacer()
         ],
       ),
     );
