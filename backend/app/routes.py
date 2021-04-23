@@ -101,7 +101,7 @@ def new_comment(post_id):
             post_dir = root + str(post_id) + '/'
             break
     if post_dir is None:
-        return jsonify({'status': 'no such post with post id %d found' % post_id})
+        return jsonify({'status': 'no such post with post id %s found' % post_id})
     else:
         post_file = post_dir+'post_file'
         post = load_dict(post_file)
@@ -116,7 +116,7 @@ def new_comment(post_id):
             comments.append(data)
             post['comments'] = comments
         save_dict(post, post_file)
-        return jsonify({'status': 'successfully added comment to post with post id %d' % post_id})
+        return jsonify({'status': 'successfully added comment to post with post id %s' % post_id})
 
 
 @app.route('/new_track/<int:post_id>', methods=['POST'])
@@ -129,7 +129,7 @@ def new_track(post_id):
             post_dir = root + str(post_id) + '/'
             break
     if post_dir is None:
-        return jsonify({'status': 'no such post with post id %d found' % post_id})
+        return jsonify({'status': 'no such post with post id %s found' % post_id})
     else:
         post_file = post_dir + 'post_file'
         post = load_dict(post_file)
@@ -144,13 +144,13 @@ def new_track(post_id):
         tracks.append(data)
         post['tracks'] = tracks
         save_dict(post, post_file)
-        return jsonify({'status': 'successfully added comment to post with post id %d' % post_id})
+        return jsonify({'status': 'successfully added comment to post with post id %s' % post_id})
 
 
-@app.route('/', methods=['GET', 'POST'])
-def homepage():
-    data = request.form.to_dict(flat=False)
-    print(data)
+# @app.route('/', methods=['GET', 'POST'])
+# def homepage():
+#     data = request.form.to_dict(flat=False)
+#     print(data)
     # if data:
     #     directories = os.listdir(SAVE_DIR)
     #     post_id = str(len(directories))
@@ -178,44 +178,44 @@ def homepage():
     #       <input type=submit value=Submit>
     #     </form>
     #     '''
-    if data:
-        post_id = data['postid'][0]
-        post_dir = None
-        for root, directory, files in os.walk(SAVE_DIR):
-            if str(post_id) in directory:
-                post_dir = root + str(post_id) + '/'
-                break
-        if post_dir is None:
-            return jsonify({'status': 'no such post with post id %s found' % post_id})
-        else:
-            post_file = post_dir + 'post_file'
-            post = load_dict(post_file)
-            if 'comments' in post.keys():
-                comments = post['comments']
-                data['comment_id'] = len(comments)
-            else:
-                comments = []
-                data['comment_id'] = len(comments)
-            filename = upload_file(post_id)
-            data['file'] = filename
-            comments.append(data)
-            post['comments'] = comments
-            save_dict(post, post_file)
-            return jsonify({'status': 'successfully added comment to post with post id %s' % post_id})
-
-    return '''
-        <!doctype html>
-        <title>Upload new File</title>
-        <h1>Post</h1>
-        <form method=post enctype=multipart/form-data>
-          <label for="postid"> postid </label>
-          <input type="text" name="postid">
-          <label for="comment"> Comments </label>
-          <input type="text" name="comment">
-          <label for="user"> User </label>
-          <input type="text" name="user">
-          <label for="file"> File </label>
-          <input type=file name=file>
-          <input type=submit value=Submit>
-        </form>
-        '''
+    # if data:
+    #     post_id = data['postid'][0]
+    #     post_dir = None
+    #     for root, directory, files in os.walk(SAVE_DIR):
+    #         if str(post_id) in directory:
+    #             post_dir = root + str(post_id) + '/'
+    #             break
+    #     if post_dir is None:
+    #         return jsonify({'status': 'no such post with post id %s found' % post_id})
+    #     else:
+    #         post_file = post_dir + 'post_file'
+    #         post = load_dict(post_file)
+    #         if 'comments' in post.keys():
+    #             comments = post['comments']
+    #             data['comment_id'] = len(comments)
+    #         else:
+    #             comments = []
+    #             data['comment_id'] = len(comments)
+    #         filename = upload_file(post_id)
+    #         data['file'] = filename
+    #         comments.append(data)
+    #         post['comments'] = comments
+    #         save_dict(post, post_file)
+    #         return jsonify({'status': 'successfully added comment to post with post id %s' % post_id})
+    #
+    # return '''
+    #     <!doctype html>
+    #     <title>Upload new File</title>
+    #     <h1>Post</h1>
+    #     <form method=post enctype=multipart/form-data>
+    #       <label for="postid"> postid </label>
+    #       <input type="text" name="postid">
+    #       <label for="comment"> Comments </label>
+    #       <input type="text" name="comment">
+    #       <label for="user"> User </label>
+    #       <input type="text" name="user">
+    #       <label for="file"> File </label>
+    #       <input type=file name=file>
+    #       <input type=submit value=Submit>
+    #     </form>
+    #     '''
