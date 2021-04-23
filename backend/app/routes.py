@@ -18,6 +18,25 @@ def load_dict(name):
         return pickle.load(f)
 
 
+def upload_file(post_id):
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            print('No file part')
+            return None
+        file = request.files['file']
+        # if user does not select file, browser also
+        # submit an empty part without filename
+        if file.filename == '':
+            print('No selected file')
+            return None
+        if file:
+            path = SAVE_DIR + str(post_id) + '/'
+            filename = 'post_' + secure_filename(file.filename)
+            file.save(os.path.join(path, filename))
+            return filename
+
+
 # @app.route('/')
 # def homepage():
 #
@@ -39,15 +58,29 @@ def all_post():
     return jsonify(feed)
 
 
+@app.route('/single_post/<int:post_id>', methods=['GET'])
+def single_post(post_id):
+    post_dir = SAVE_DIR + str(post_id) + '/'
+    if not os.path.isdir(post_dir):
+        return jsonify({'status': 'no such post with post_id %s'% (str(post_id))})
+    post_file = post_dir + 'post_file'
+    post = load_dict(post_file)
+    file_path = 'data/' + post['post_id'] +'/' + post['file']
+    return jsonify(post)
+
+
 @app.route('/new_post', methods=['POST'])
 def new_post():
     data = request.get_json()
     directories = os.listdir(SAVE_DIR)
-    post_id = len(directories)
+    post_id = str(len(directories))
     data['post_id'] = post_id
     post_path = os.path.join(SAVE_DIR, post_id)
     if not os.path.isdir(post_path):
         os.mkdir(post_path)
+    filename = upload_file(post_id)
+    if filename is not None:
+        data['file'] = filename
     post_file = post_path + '/' + 'post_file'
     save_dict(data, post_file)
     return jsonify({'status': 'success'})
@@ -59,8 +92,8 @@ def new_comment(post_id):
 
     post_dir = None
     for root, directory, files in os.walk(SAVE_DIR):
-        if directory == str(post_id):
-            post_dir = os.path.join(root, directory)
+        if str(post_id) in directory:
+            post_dir = root + str(post_id) + '/'
             break
     if post_dir is None:
         return jsonify({'status': 'no such post with post id %d found' % post_id})
@@ -81,79 +114,80 @@ def new_comment(post_id):
         return jsonify({'status': 'successfully added comment to post with post id %d' % post_id})
 
 
-@app.route('/upload_file', methods=['GET', 'POST'])
-def upload_file():
-    if request.method == 'POST':
-        # check if the post request has the file part
-        if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-        file = request.files['file']
-        # if user does not select file, browser also
-        # submit an empty part without filename
-        if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
-        if file:
-            print(os.getcwd())
-            filename = secure_filename(file.filename)
-            file.save(os.path.join('app/data/1/', filename))
-            return send_file(os.path.join('data/1/', filename))
-    return '''
-    <!doctype html>
-    <title>Upload new File</title>
-    <h1>Upload new File</h1>
-    <form method=post enctype=multipart/form-data>
-      <input type=file name=file>
-      <input type=submit value=Upload>
-    </form>
-    '''
+# @app.route('/new_track', methods=['POST'])
+# def new_track():
+#
 
 
 @app.route('/', methods=['GET', 'POST'])
 def homepage():
     data = request.form.to_dict(flat=False)
     print(data)
-    if data:
-        directories = os.listdir(SAVE_DIR)
-        post_id = str(len(directories))
-        data['post_id'] = post_id
-        post_path = os.path.join(SAVE_DIR, post_id)
-        if not os.path.isdir(post_path):
-            os.mkdir(post_path)
-        post_file = post_path + '/' + 'post_file'
-        save_dict(data, post_file)
-        return jsonify({'status': 'success'})
     # if data:
-    #     post_id = data['postid'][0]
-    #     post_dir = None
-    #     for root, directory, files in os.walk(SAVE_DIR):
-    #         if post_id in directory:
-    #             post_dir = os.path.join(root, post_id)
-    #             break
-    #     if post_dir == None:
-    #         return jsonify({'status': 'no such post with post id %s found' % post_id})
-    #     else:
-    #         post_file = post_dir + '/post_file'
-    #         post = load_dict(post_file)
-    #         if 'comments' in post.keys():
-    #             comments = post['comments']
-    #             comments.append(data)
-    #             post['comments'] = comments
-    #         else:
-    #             comments = []
-    #             comments.append(data)
-    #             post['comments'] = comments
-    #         save_dict(post, post_file)
+    #     directories = os.listdir(SAVE_DIR)
+    #     post_id = str(len(directories)+1)
+    #     data['post_id'] = post_id
+    #     post_path = os.path.join(SAVE_DIR, post_id)
+    #     if not os.path.isdir(post_path):
+    #         os.mkdir(post_path)
+    #     filename = upload_file(post_id)
+    #     if filename is not None:
+    #         data['file'] = filename
+    #     post_file = post_path + '/' + 'post_file'
+    #     save_dict(data, post_file)
+    #     return jsonify({'status': 'success'})
+    # return '''
+    #     <!doctype html>
+    #     <title>Upload new File</title>
+    #     <h1>Post</h1>
+    #     <form method=post enctype=multipart/form-data>
+    #       <label for="title"> Title </label>
+    #       <input type="text" name="title">
+    #       <label for="user"> User </label>
+    #       <input type="text" name="user">
+    #       <label for="file"> File </label>
+    #       <input type=file name=file>
+    #       <input type=submit value=Submit>
+    #     </form>
+    #     '''
+    if data:
+        post_id = data['postid'][0]
+        post_dir = None
+        for root, directory, files in os.walk(SAVE_DIR):
+            if str(post_id) in directory:
+                post_dir = root + str(post_id) + '/'
+                break
+        if post_dir is None:
+            return jsonify({'status': 'no such post with post id %s found' % post_id})
+        else:
+            post_file = post_dir + 'post_file'
+            post = load_dict(post_file)
+            if 'comments' in post.keys():
+                comments = post['comments']
+                data['comment_id'] = len(comments)
+                comments.append(data)
+                post['comments'] = comments
+            else:
+                comments = []
+                data['comment_id'] = len(comments)
+                comments.append(data)
+                post['comments'] = comments
+            save_dict(post, post_file)
+            return jsonify({'status': 'successfully added comment to post with post id %s' % post_id})
+
     return '''
-    <!doctype html>
-    <title>Upload new File</title>
-    <h1>Post</h1>
-    <form method=post enctype=multipart/form-data>
-      <label for="title"> Title </label>
-      <input type="text" name="title">
-      <label for="user"> User </label>
-      <input type="text" name="user">
-      <input type=submit value=Submit>
-    </form>
-    '''
+        <!doctype html>
+        <title>Upload new File</title>
+        <h1>Post</h1>
+        <form method=post enctype=multipart/form-data>
+          <label for="postid"> postid </label>
+          <input type="text" name="postid">
+          <label for="comment"> Comments </label>
+          <input type="text" name="comment">
+          <label for="user"> User </label>
+          <input type="text" name="user">
+          <label for="file"> File </label>
+          <input type=file name=file>
+          <input type=submit value=Submit>
+        </form>
+        '''
