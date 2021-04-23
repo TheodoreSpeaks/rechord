@@ -68,10 +68,11 @@ def single_post(post_id):
     return jsonify(post)
 
 
-@app.route('/get_file/<file_path>', methods=['GET'])
-def get_file(file_path):
+@app.route('/get_file', methods=['GET'])
+def get_file():
+    file_path = request.args.get('path')
+    file_path = '../' + file_path
     return send_file(file_path)
-
 
 @app.route('/new_post', methods=['POST'])
 def new_post():
