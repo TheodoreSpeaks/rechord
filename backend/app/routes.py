@@ -5,7 +5,7 @@ from flask import Flask, jsonify, request, flash, redirect, url_for, send_file
 from werkzeug.utils import secure_filename
 
 
-SAVE_DIR = "app/data/"
+SAVE_DIR = "../data/"
 if not os.path.isdir(SAVE_DIR):
     os.mkdir(SAVE_DIR)
 
@@ -35,8 +35,9 @@ def upload_file(post_id):
         if file:
             path = SAVE_DIR + str(post_id) + '/'
             filename = 'post_' + secure_filename(file.filename)
-            file.save(os.path.join(path, filename))
-            return filename
+            file_path = os.path.join(path, filename)
+            file.save(file_path)
+            return file_path
 
 
 # @app.route('/')
@@ -67,7 +68,6 @@ def single_post(post_id):
         return jsonify({'status': 'no such post with post_id %s'% (str(post_id))})
     post_file = post_dir + 'post_file'
     post = load_dict(post_file)
-    file_path = 'data/' + post['post_id'] +'/' + post['file']
     return jsonify(post)
 
 
@@ -116,9 +116,32 @@ def new_comment(post_id):
         return jsonify({'status': 'successfully added comment to post with post id %d' % post_id})
 
 
-# @app.route('/new_track', methods=['POST'])
-# def new_track():
-#
+@app.route('/new_track/<int:post_id>', methods=['POST'])
+def new_track(post_id):
+    data = request.get_json()
+
+    post_dir = None
+    for root, directory, files in os.walk(SAVE_DIR):
+        if str(post_id) in directory:
+            post_dir = root + str(post_id) + '/'
+            break
+    if post_dir is None:
+        return jsonify({'status': 'no such post with post id %d found' % post_id})
+    else:
+        post_file = post_dir + 'post_file'
+        post = load_dict(post_file)
+        if 'tracks' in post.keys():
+            tracks = post['tracks']
+            data['comment_id'] = len(tracks)
+        else:
+            tracks = []
+            data['comment_id'] = len(tracks)
+        filename = upload_file(post_id)
+        data['file'] = filename
+        tracks.append(data)
+        post['tracks'] = tracks
+        save_dict(post, post_file)
+        return jsonify({'status': 'successfully added comment to post with post id %d' % post_id})
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -127,7 +150,7 @@ def homepage():
     print(data)
     # if data:
     #     directories = os.listdir(SAVE_DIR)
-    #     post_id = str(len(directories)+1)
+    #     post_id = str(len(directories))
     #     data['post_id'] = post_id
     #     post_path = os.path.join(SAVE_DIR, post_id)
     #     if not os.path.isdir(post_path):
@@ -167,13 +190,13 @@ def homepage():
             if 'comments' in post.keys():
                 comments = post['comments']
                 data['comment_id'] = len(comments)
-                comments.append(data)
-                post['comments'] = comments
             else:
                 comments = []
                 data['comment_id'] = len(comments)
-                comments.append(data)
-                post['comments'] = comments
+            filename = upload_file(post_id)
+            data['file'] = filename
+            comments.append(data)
+            post['comments'] = comments
             save_dict(post, post_file)
             return jsonify({'status': 'successfully added comment to post with post id %s' % post_id})
 
