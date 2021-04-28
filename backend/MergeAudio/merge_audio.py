@@ -10,7 +10,8 @@ def merge_audio_files(files, export_location):
     result_sound = AudioSegment.silent(duration=60000)
     for f in files:
         #AudioSegment.from_file("ex1.wav", format="wav") - if we're only using wav
-        overlay_sound = AudioSegment.from_file(f, format='wav')
+        # overlay_sound = AudioSegment.from_file(f, format='wav')
+        overlay_sound = AudioSegment.from_file(f)
         result_sound = result_sound.overlay(overlay_sound, position=0)
 
     #remove file if it exists at this location
@@ -19,6 +20,7 @@ def merge_audio_files(files, export_location):
 
     #exp = result_sound.export(export_location, format="wav") - if we're only using wav
     exp = result_sound.export(export_location, format='wav')
+
 
 if __name__ == "__main__":
     files = ['ex1.wav', 'ex2.wav']

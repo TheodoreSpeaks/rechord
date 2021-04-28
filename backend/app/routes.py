@@ -1,6 +1,7 @@
 import os
 import pickle
 from app import app
+from MergeAudio.merge_audio import merge_audio_files
 from flask import Flask, jsonify, request, flash, redirect, url_for, send_file
 from werkzeug.utils import secure_filename
 
@@ -21,7 +22,7 @@ def load_dict(name):
         return pickle.load(f)
 
 
-def upload_file(post_id):
+def upload_file(post_id, post=True):
     if request.method == 'POST':
         # check if the post request has the file part
         if 'file' not in request.files:
@@ -36,7 +37,10 @@ def upload_file(post_id):
         if file:
             path = SAVE_DIR + str(post_id) + '/'
             frontend_file_path = FILE_DIR + str(post_id) + '/'
-            filename = 'post_' + secure_filename(file.filename)
+            if post:
+                filename = 'post_' + secure_filename(file.filename)
+            else:
+                filename= 'track_' + secure_filename(file.filename)
             file_path = os.path.join(path, filename)
             file.save(file_path)
             frontend_file_path = os.path.join(frontend_file_path, filename)
@@ -74,6 +78,7 @@ def get_file():
     file_path = '../' + file_path
     return send_file(file_path)
 
+
 @app.route('/new_post', methods=['POST'])
 def new_post():
     raw_data = request.form.to_dict(flat=False)
@@ -89,6 +94,7 @@ def new_post():
     filename = upload_file(post_id)
     if filename is not None:
         data['file'] = filename
+        data['original_file'] = filename
     post_file = post_path + '/' + 'post_file'
     save_dict(data, post_file)
     return jsonify({'status': 'success'})
@@ -146,8 +152,14 @@ def new_track(post_id):
         else:
             tracks = []
             data['comment_id'] = len(tracks)
-        filename = upload_file(post_id)
-        data['file'] = filename
+        track_filename = upload_file(post_id, post=False)
+        post_filename = post['file']
+
+        merged_filename = SAVE_DIR + str(post_id) + '/' + 'merged_audio.wav'
+        merge_audio_files([track_filename, post_filename], merged_filename)
+
+        data['file'] = track_filename
+        post['file'] = merged_filename
         tracks.append(data)
         post['tracks'] = tracks
         save_dict(post, post_file)
@@ -156,35 +168,35 @@ def new_track(post_id):
 
 @app.route('/', methods=['GET', 'POST'])
 def homepage():
-    data = request.form.to_dict(flat=False)
-    print(data)
-    if data:
-        directories = os.listdir(SAVE_DIR)
-        post_id = str(len(directories))
-        data['post_id'] = post_id
-        post_path = os.path.join(SAVE_DIR, post_id)
-        if not os.path.isdir(post_path):
-            os.mkdir(post_path)
-        filename = upload_file(post_id)
-        if filename is not None:
-            data['file'] = filename
-        post_file = post_path + '/' + 'post_file'
-        save_dict(data, post_file)
-        return jsonify({'status': 'success'})
-    return '''
-        <!doctype html>
-        <title>Upload new File</title>
-        <h1>Post</h1>
-        <form method=post enctype=multipart/form-data>
-          <label for="title"> Title </label>
-          <input type="text" name="title">
-          <label for="user"> User </label>
-          <input type="text" name="user">
-          <label for="file"> File </label>
-          <input type=file name=file>
-          <input type=submit value=Submit>
-        </form>
-        '''
+    raw_data = request.form.to_dict(flat=False)
+    print(raw_data)
+    # if data:
+    #     directories = os.listdir(SAVE_DIR)
+    #     post_id = str(len(directories))
+    #     data['post_id'] = post_id
+    #     post_path = os.path.join(SAVE_DIR, post_id)
+    #     if not os.path.isdir(post_path):
+    #         os.mkdir(post_path)
+    #     filename = upload_file(post_id)
+    #     if filename is not None:
+    #         data['file'] = filename
+    #     post_file = post_path + '/' + 'post_file'
+    #     save_dict(data, post_file)
+    #     return jsonify({'status': 'success'})
+    # return '''
+    #     <!doctype html>
+    #     <title>Upload new File</title>
+    #     <h1>Post</h1>
+    #     <form method=post enctype=multipart/form-data>
+    #       <label for="title"> Title </label>
+    #       <input type="text" name="title">
+    #       <label for="user"> User </label>
+    #       <input type="text" name="user">
+    #       <label for="file"> File </label>
+    #       <input type=file name=file>
+    #       <input type=submit value=Submit>
+    #     </form>
+    #     '''
     # if data:
     #     post_id = data['postid'][0]
     #     post_dir = None
@@ -226,3 +238,53 @@ def homepage():
     #       <input type=submit value=Submit>
     #     </form>
     #     '''
+
+    if raw_data:
+        data = {}
+        for k, v in raw_data.items():
+            data[k] = v[0]
+        post_dir = None
+        post_id = str(data['postid'])
+        for root, directory, files in os.walk(SAVE_DIR):
+            if str(post_id) in directory:
+                post_dir = root + str(post_id) + '/'
+                break
+        if post_dir is None:
+            return jsonify({'status': 'no such post with post id %s found' % post_id})
+        else:
+            post_file = post_dir + 'post_file'
+            post = load_dict(post_file)
+            if 'tracks' in post.keys():
+                tracks = post['tracks']
+                data['comment_id'] = len(tracks)
+            else:
+                tracks = []
+                data['comment_id'] = len(tracks)
+            track_filename = upload_file(post_id, post=False)
+            post_filename = post['file']
+
+            merged_filename = SAVE_DIR + str(post_id) + '/' + 'merged_audio.aac'
+            merge_audio_files([track_filename, post_filename], merged_filename)
+
+            data['file'] = track_filename
+            post['file'] = merged_filename
+            tracks.append(data)
+            post['tracks'] = tracks
+            save_dict(post, post_file)
+
+    return '''
+        <!doctype html>
+        <title>Upload new File</title>
+        <h1>Tracks</h1>
+        <form method=post enctype=multipart/form-data>
+          <label for="postid"> postid </label>
+          <input type="text" name="postid">
+          <label for="comment"> Comments </label>
+          <input type="text" name="comment">
+          <label for="user"> User </label>
+          <input type="text" name="user">
+          <label for="file"> File </label>
+          <input type=file name=file>
+          <input type=submit value=Submit>
+        </form>
+            '''
