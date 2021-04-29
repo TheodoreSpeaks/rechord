@@ -1,7 +1,7 @@
 import os
 import pickle
 from app import app
-from MergeAudio.merge_audio import merge_audio_files
+from MergeAudio.merge_audio import merge_audio_files, write_to_wav
 from flask import Flask, jsonify, request, flash, redirect, url_for, send_file
 from werkzeug.utils import secure_filename
 
@@ -43,6 +43,7 @@ def upload_file(post_id, post=True):
                 filename= 'track_' + secure_filename(file.filename)
             file_path = os.path.join(path, filename)
             file.save(file_path)
+            write_to_wav(file_path)
             frontend_file_path = os.path.join(frontend_file_path, filename)
             return frontend_file_path
 
@@ -155,7 +156,7 @@ def new_track(post_id):
         track_filename = upload_file(post_id, post=False)
         post_filename = post['file']
 
-        merged_filename = SAVE_DIR + str(post_id) + '/' + 'merged_audio.wav'
+        merged_filename = SAVE_DIR + str(post_id) + '/' + 'merged_audio.aac'
         merge_audio_files([track_filename, post_filename], merged_filename)
 
         data['file'] = track_filename
