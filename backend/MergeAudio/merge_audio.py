@@ -21,7 +21,26 @@ def merge_audio_files(files, export_location):
     #exp = result_sound.export(export_location, format="wav") - if we're only using wav
     exp = result_sound.export(export_location, format='wav')
 
+def write_to_wav(aac_file):
+    name, file_type = aac_file.split('.')
+    assert file_type == 'aac'
+
+    new_name = name + '.wav'
+    sound = AudioSegment.from_file(aac_file)
+    sound.export(new_name, format='wav', bitrate='128k')
+    return new_name
+
+def write_to_aac(wav_file):
+    name, file_type = wav_file.split('.')
+    assert file_type == 'wav'
+
+    new_name = name + '.aac'
+    sound = AudioSegment.from_file(wav_file)
+    sound.export(new_name, format='adts', bitrate='128k')
+    return new_name
+
 
 if __name__ == "__main__":
     files = ['ex1.wav', 'ex2.wav']
     merge_audio_files(files, 'test_output.wav')
+    # write_to_wav('test.aac')
