@@ -83,6 +83,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // ),
       appBar: BackdropAppBar(
         title: Text(genre),
+        toolbarOpacity: .8,
         // leading: IconButton(
         //     onPressed: () => Backdrop.of(context).fling(),
         //     icon: Icon(Icons.filter_list)),
@@ -91,7 +92,11 @@ class _MyHomePageState extends State<MyHomePage> {
       backLayer: Container(
         height: 250,
         width: double.infinity,
-        color: Colors.purple,
+        decoration: BoxDecoration(
+            gradient: LinearGradient(
+                colors: [Colors.purple, Colors.blue],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -120,7 +125,8 @@ class _MyHomePageState extends State<MyHomePage> {
                         decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(32.0),
                             border: Border.all(color: Colors.white),
-                            color: selected ? Colors.white : Colors.purple),
+                            color:
+                                selected ? Colors.white : Colors.transparent),
                         child: Text(
                           currentGenre,
                           style: TextStyle(
@@ -135,7 +141,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.only(top: 16.0, left: 8.0),
               child: Text(
                 'Search:',
                 style: TextStyle(color: Colors.white, fontSize: 18),
@@ -145,8 +151,6 @@ class _MyHomePageState extends State<MyHomePage> {
               // controller: searchController,
               onFieldSubmitted: (String search) {
                 setState(() {});
-                print('text');
-                print(searchController.text);
               },
               onEditingComplete: () => setState(() {}),
               controller: searchController,

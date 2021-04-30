@@ -119,9 +119,9 @@ class _TrackCardState extends State<TrackCard> {
                   Text(
                     "${widget.trackCount}",
                     style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold),
+                      color: Colors.white,
+                      fontSize: 18,
+                    ),
                   ),
                   SizedBox(width: 16),
                   Icon(Icons.chat_bubble_outline,
@@ -130,9 +130,9 @@ class _TrackCardState extends State<TrackCard> {
                   Text(
                     "${widget.commentCount}",
                     style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold),
+                      color: Colors.white,
+                      fontSize: 18,
+                    ),
                   ),
                 ],
               ),
@@ -142,6 +142,7 @@ class _TrackCardState extends State<TrackCard> {
                   Expanded(
                       child:
                           SoundPlayerUI.fromLoader((context) => loadTrack())),
+                  SizedBox(width: 8.0),
                   InkWell(
                     onTap: () => setState(() => liked = !liked),
                     child: Column(
