@@ -1,4 +1,5 @@
 // @dart=2.9
+import 'package:backdrop/backdrop.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -48,6 +49,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   List<dynamic> json = [];
   String genre = 'All Genres';
+  final searchController = TextEditingController();
 
   Future<void> refresh() async {
     var dio = Dio();
@@ -68,77 +70,103 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     List<dynamic> filteredJson = [];
     for (dynamic entry in json) {
-      if (genre == 'All Genres' || entry['genre'] == genre) {
+      if ((genre == 'All Genres' || entry['genre'] == genre) &&
+          (searchController.text == '' ||
+              entry['title'].contains(searchController.text))) {
+        print(entry['title'].contains(searchController.text));
         filteredJson.add(entry);
       }
     }
-    return Scaffold(
-      appBar: AppBar(
+    return BackdropScaffold(
+      // appBar: AppBar(
+      //   title: Text(genre),
+      // ),
+      appBar: BackdropAppBar(
         title: Text(genre),
+        // leading: IconButton(
+        //     onPressed: () => Backdrop.of(context).fling(),
+        //     icon: Icon(Icons.filter_list)),
       ),
-      drawer: Drawer(
-        // Add a ListView to the drawer. This ensures the user can scroll
-        // through the options in the drawer if there isn't enough vertical
-        // space to fit everything.
-        child: ListView(
-          // Important: Remove any padding from the ListView.
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            DrawerHeader(
+      resizeToAvoidBottomInset: false,
+      backLayer: Container(
+        height: 250,
+        width: double.infinity,
+        color: Colors.purple,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
               child: Text(
-                'Choose a Genre:',
-                style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white),
-              ),
-              decoration: BoxDecoration(
-                color: Colors.purple,
+                'Filter by Genre:',
+                style: TextStyle(color: Colors.white, fontSize: 18),
               ),
             ),
-            ListTile(
-              title: Text('All Genres'),
-              onTap: () {
-                setState(() => genre = 'All Genres');
-                Navigator.pop(context);
-              },
+            Container(
+              height: 45,
+              child: ListView.builder(
+                itemCount: genres.length + 1,
+                scrollDirection: Axis.horizontal,
+                itemBuilder: (context, index) {
+                  String currentGenre =
+                      index == 0 ? 'All Genres' : genres[index - 1].name;
+                  bool selected = genre == currentGenre;
+                  return Padding(
+                    padding: const EdgeInsets.only(left: 6.0),
+                    child: InkWell(
+                      onTap: () => setState(() => genre = currentGenre),
+                      child: Container(
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(32.0),
+                            border: Border.all(color: Colors.white),
+                            color: selected ? Colors.white : Colors.purple),
+                        child: Text(
+                          currentGenre,
+                          style: TextStyle(
+                              fontSize: 18,
+                              color: selected ? Colors.purple : Colors.white),
+                        ),
+                        // backgroundColor: Colors.white,
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
-            ListTile(
-              title: Text('Country'),
-              onTap: () {
-                setState(() => genre = 'Country');
-
-                Navigator.pop(context);
-              },
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                'Search:',
+                style: TextStyle(color: Colors.white, fontSize: 18),
+              ),
             ),
-            ListTile(
-              title: Text('Rock'),
-              onTap: () {
-                setState(() => genre = 'Rock');
-
-                Navigator.pop(context);
+            TextFormField(
+              // controller: searchController,
+              onFieldSubmitted: (String search) {
+                setState(() {});
+                print('text');
+                print(searchController.text);
               },
-            ),
-            ListTile(
-              title: Text('Indie'),
-              onTap: () {
-                setState(() => genre = 'Indie');
-
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: Text('Soul'),
-              onTap: () {
-                setState(() => genre = 'Soul');
-
-                Navigator.pop(context);
-              },
+              onEditingComplete: () => setState(() {}),
+              controller: searchController,
+              style: TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: 'Find a specific song...',
+                hintStyle: TextStyle(color: Colors.white70),
+                border: InputBorder.none,
+                contentPadding:
+                    // TODO: fix alignment
+                    EdgeInsets.only(left: 10, top: 12, bottom: 5),
+                prefixIcon: Icon(Icons.search, color: Colors.white),
+              ),
             ),
           ],
         ),
       ),
-      body: RefreshIndicator(
+      headerHeight: MediaQuery.of(context).size.height - 300,
+
+      frontLayer: RefreshIndicator(
         onRefresh: refresh,
         child: Center(
             child: ListView.builder(
