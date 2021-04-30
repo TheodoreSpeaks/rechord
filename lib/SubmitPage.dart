@@ -57,7 +57,6 @@ class _SubmitPageState extends State<SubmitPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text('Add submission title')),
         floatingActionButton: FloatingActionButton.extended(
             onPressed: () {
               submitPost();
@@ -68,89 +67,153 @@ class _SubmitPageState extends State<SubmitPage> {
             key: null),
         body: Center(
             child: Container(
-                child: Column(
-          children: [
-            Container(
                 decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                        colors: [Colors.red, Colors.purple],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight),
-                    borderRadius: BorderRadius.circular(32)),
-                padding: EdgeInsets.all(16.0),
-                margin: EdgeInsets.only(left: 8.0, right: 8.0, top: 16.0),
-                height: 250,
+                  gradient: LinearGradient(
+                      colors: [Colors.purple, Colors.blue],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight),
+                ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    AppBar(
+                      backgroundColor: Colors.transparent,
+                      elevation: 0,
+                    ),
+                    SizedBox(height: 32),
+                    Text(
+                      'Add submission info',
+                      style: TextStyle(color: Colors.white, fontSize: 28),
+                    ),
+                    SizedBox(height: 16.0),
+                    Text(
+                      'For your new song!',
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
                     Expanded(
-                      child: Row(children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: _titleController,
-                            style: TextStyle(color: Colors.white),
-                            keyboardType: TextInputType.multiline,
-                            maxLines: 5,
-                            decoration: InputDecoration(
-                                enabledBorder: InputBorder.none,
-                                hintStyle: TextStyle(color: Colors.white70),
-                                hintText: 'Title your masterpiece!'),
-                          ),
-                        ),
-                        widget.postId == null
-                            ? FloatingActionButton.extended(
-                                key: null,
-                                backgroundColor: Colors.white,
-                                onPressed: () {
-                                  showModalBottomSheet(
-                                      context: context,
-                                      builder: (context) {
-                                        return Container(
-                                            child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Padding(
+                        flex: 3,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              TextFormField(
+                                controller: _titleController,
+                                style: TextStyle(color: Colors.white),
+                                keyboardType: TextInputType.multiline,
+                                maxLines: 3,
+                                decoration: InputDecoration(
+                                    enabledBorder: InputBorder.none,
+                                    hintStyle: TextStyle(color: Colors.white70),
+                                    focusColor: Colors.white,
+                                    hoverColor: Colors.white,
+                                    hintText: 'Title your masterpiece...'),
+                              ),
+                              SizedBox(height: 16.0),
+                              Row(
+                                children: [
+                                  Expanded(
+                                      child: SoundPlayerUI.fromTrack(
+                                          widget.track)),
+                                  widget.postId == null
+                                      ? InkWell(
+                                          child: Container(
                                               padding:
                                                   const EdgeInsets.all(16.0),
-                                              child: Text('Choose a genre:',
-                                                  style:
-                                                      TextStyle(fontSize: 28)),
-                                            ),
-                                            BottomSelectableItem(
-                                                label: 'Country',
-                                                onTap: onBottomLabelTap),
-                                            Divider(),
-                                            BottomSelectableItem(
-                                                label: 'Rock',
-                                                onTap: onBottomLabelTap),
-                                            Divider(),
-                                            BottomSelectableItem(
-                                                label: 'Indie',
-                                                onTap: onBottomLabelTap),
-                                            Divider(),
-                                            BottomSelectableItem(
-                                                label: 'Soul',
-                                                onTap: onBottomLabelTap),
-                                          ],
-                                        ));
-                                      });
-                                },
-                                label: Text(currentGenre,
-                                    style: TextStyle(color: Colors.purple)))
-                            : Container()
-                      ]),
-                    ),
-                    Spacer(),
-                    Row(
-                      children: [
-                        Expanded(child: SoundPlayerUI.fromTrack(widget.track)),
-                      ],
-                    )
+                                              margin: const EdgeInsets.only(
+                                                  left: 8.0),
+                                              decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(64),
+                                                  border: Border.all(
+                                                      color: Colors.white)),
+                                              child: Text(currentGenre,
+                                                  style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 16))),
+                                          onTap: () => showBottomSheet(context),
+                                        )
+                                      : Container(),
+                                ],
+                              ),
+                              SizedBox(height: 8.0),
+                            ],
+                          ),
+                        )),
+
+                    // Container()
+                    //     padding: EdgeInsets.all(16.0),
+                    //     margin:
+                    //         EdgeInsets.only(left: 8.0, right: 8.0, top: 16.0),
+                    //     height: 250,
+                    //     child: Column(
+                    //       crossAxisAlignment: CrossAxisAlignment.start,
+                    //       children: [
+                    //         Expanded(
+                    //           child:
+                    //         Spacer(),
+                    //         Row(
+                    //           children: [
+                    //             Expanded(
+                    //                 child:
+                    //                     SoundPlayerUI.fromTrack(widget.track)),
+                    //           ],
+                    //         )
+                    //       ],
+                    //     )),
                   ],
-                )),
-          ],
-        ))));
+                ))));
+  }
+
+  void showBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+        context: context,
+        builder: (context) {
+          return Container(
+              height: 200,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child:
+                        Text('Choose a genre:', style: TextStyle(fontSize: 28)),
+                  ),
+                  Wrap(
+                      direction: Axis.horizontal,
+                      runSpacing: 8.0,
+                      children: genres.map((genre) {
+                        bool selected = currentGenre == genre.name;
+                        return Padding(
+                          padding: const EdgeInsets.only(left: 6.0),
+                          child: InkWell(
+                            onTap: () => setState(() {
+                              currentGenre = genre.name;
+                              Navigator.of(context).pop();
+                            }),
+                            child: Container(
+                              padding: const EdgeInsets.all(8.0),
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(32.0),
+                                  color: selected
+                                      ? Colors.purple
+                                      : Colors.transparent,
+                                  border: Border.all(color: Colors.purple)),
+                              child: Text(
+                                genre.name,
+                                style: TextStyle(
+                                    fontSize: 18,
+                                    color: selected
+                                        ? Colors.white
+                                        : Colors.purple),
+                              ),
+                              // backgroundColor: Colors.white,
+                            ),
+                          ),
+                        );
+                      }).toList())
+                ],
+              ));
+        });
   }
 
   void onBottomLabelTap(String label) {

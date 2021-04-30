@@ -73,7 +73,6 @@ class _MyHomePageState extends State<MyHomePage> {
       if ((genre == 'All Genres' || entry['genre'] == genre) &&
           (searchController.text == '' ||
               entry['title'].contains(searchController.text))) {
-        print(entry['title'].contains(searchController.text));
         filteredJson.add(entry);
       }
     }
