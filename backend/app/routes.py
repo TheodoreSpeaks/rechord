@@ -50,7 +50,7 @@ def upload_file(post_id, post=True):
 
 @app.route('/all_post', methods=['GET'])
 def all_post():
-    directories = os.listdir(SAVE_DIR)
+    directories = sorted(os.listdir(SAVE_DIR))
     feed = {}
     posts = []
     for dir in directories:
