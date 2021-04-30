@@ -15,6 +15,7 @@ class SongPage extends StatefulWidget {
   final String user;
   final String genre;
   final String filePath;
+  final String time;
   final int likes;
   final bool isLiked;
   final String postId;
@@ -27,7 +28,8 @@ class SongPage extends StatefulWidget {
       required this.filePath,
       required this.likes,
       required this.isLiked,
-      required this.postId})
+      required this.postId,
+      required this.time})
       : super(key: key);
 
   @override
@@ -39,6 +41,7 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
   late TextEditingController _commentController;
   late bool liked;
   bool playing = false;
+  String? originalFile;
 
   List<dynamic> commentsJson = [];
   List<dynamic> tracksJson = [];
@@ -82,6 +85,7 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
     setState(() {
       commentsJson = response.data['comments'] ?? [];
       tracksJson = response.data['tracks'] ?? [];
+      originalFile = response.data['original_file'] ?? '';
     });
   }
 
@@ -212,17 +216,13 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
             controller: _tabController,
             tabs: const <Widget>[
               Tab(
-                icon: Icon(
-                  Icons.library_music,
-                  color: Colors.black,
-                ),
                 child: Text('Tracks', style: TextStyle(color: Colors.black)),
               ),
               Tab(
-                icon: Icon(
-                  Icons.comment,
-                  color: Colors.black,
-                ),
+                // icon: Icon(
+                //   Icons.comment,
+                //   color: Colors.black,
+                // ),
                 child: Text('Comments', style: TextStyle(color: Colors.black)),
               ),
             ],
@@ -236,13 +236,24 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
                     child: RefreshIndicator(
                       onRefresh: refresh,
                       child: ListView.separated(
-                          itemCount: tracksJson.length,
+                          itemCount: tracksJson.length + 1,
                           separatorBuilder: (BuildContext context, int index) =>
                               Divider(),
                           padding: EdgeInsets.all(16.0),
                           scrollDirection: Axis.vertical,
                           itemBuilder: (BuildContext context, int index) {
-                            dynamic json = tracksJson[index];
+                            if (index == 0) {
+                              return TrackComment(
+                                title: 'Base track',
+                                likes: 0,
+                                filePath: originalFile != null
+                                    ? originalFile!
+                                    : widget.filePath,
+                                time: widget.time,
+                                user: widget.user,
+                              );
+                            }
+                            dynamic json = tracksJson[index - 1];
                             return TrackComment(
                               title: json['title'],
                               likes: 0,
@@ -302,6 +313,26 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
           AppBar(
             elevation: 0,
             backgroundColor: Colors.transparent,
+            actions: [
+              Container(
+                width: 300,
+                child: Row(children: [
+                  Spacer(),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.music_note,
+                        color: Colors.white,
+                      ),
+                      Text(
+                        widget.genre,
+                        style: TextStyle(color: Colors.white),
+                      )
+                    ],
+                  ),
+                ]),
+              ),
+            ],
           ),
           Text(
             widget.title,
@@ -309,7 +340,7 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
           ),
           SizedBox(height: 10.0),
           Text(
-            '@${widget.user}',
+            '@${widget.user}, ${timeago.format(DateTime.parse(widget.time))}',
             style: TextStyle(color: Colors.white, fontSize: 16),
           ),
           Spacer(),
@@ -427,12 +458,19 @@ class _TrackCommentState extends State<TrackComment> {
                   child: SoundPlayerUI.fromLoader(
                       (context) => loadTrack(widget.filePath))),
               SizedBox(width: 8.0),
-              Icon(
-                liked ? Icons.favorite : Icons.favorite_border,
-                size: 24,
+              InkWell(
+                onTap: () => setState(() => liked = !liked),
+                child: Row(
+                  children: [
+                    Icon(
+                      liked ? Icons.favorite : Icons.favorite_border,
+                      size: 24,
+                    ),
+                    SizedBox(width: 8.0),
+                    Text('${widget.likes + (liked ? 1 : 0)}')
+                  ],
+                ),
               ),
-              SizedBox(width: 8.0),
-              Text('${widget.likes + (liked ? 1 : 0)}')
             ],
           )
         ],

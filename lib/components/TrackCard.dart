@@ -63,14 +63,14 @@ class _TrackCardState extends State<TrackCard> {
     return InkWell(
       onTap: () => Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => SongPage(
-          title: widget.title,
-          genre: widget.genre,
-          user: widget.user,
-          postId: widget.postId,
-          filePath: widget.filePath,
-          isLiked: liked,
-          likes: widget.likes,
-        ),
+            title: widget.title,
+            genre: widget.genre,
+            user: widget.user,
+            postId: widget.postId,
+            filePath: widget.filePath,
+            isLiked: liked,
+            likes: widget.likes,
+            time: widget.time),
       )),
       child: Container(
           decoration: BoxDecoration(
