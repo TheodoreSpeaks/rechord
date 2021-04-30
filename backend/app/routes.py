@@ -126,6 +126,7 @@ def new_comment(post_id):
             data['comment_id'] = len(comments)
             comments.append(data)
             post['comments'] = comments
+            post['comment_number'] = len(comments)
         save_dict(post, post_file)
         return jsonify({'status': 'successfully added comment to post with post id %s' % post_id})
 
