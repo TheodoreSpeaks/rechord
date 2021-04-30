@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sounds/sounds.dart';
+import 'package:timeago/timeago.dart' as timeago;
 import 'dart:math';
 
 import '../SongPage.dart';
@@ -11,6 +12,9 @@ class TrackCard extends StatefulWidget {
   final String user;
   final String filePath;
   final int likes;
+  final int trackCount;
+  final int commentCount;
+  final String time;
   final String postId;
 
   static const String defaultFilePath =
@@ -22,7 +26,10 @@ class TrackCard extends StatefulWidget {
       this.filePath = defaultFilePath,
       this.likes: 0,
       this.postId: '0',
-      required this.user})
+      required this.user,
+      this.trackCount: 0,
+      this.commentCount: 0,
+      required this.time})
       : super(key: key);
 
   TrackCard.fromJson(Map<String, dynamic> json, this.likes)
@@ -30,7 +37,11 @@ class TrackCard extends StatefulWidget {
         genre = json['genre'],
         user = json['user'],
         postId = json['post_id'],
-        filePath = json['file'];
+        filePath = json['file'],
+        time = json['time'],
+        trackCount = json.containsKey('tracks') ? json['tracks'].length : 0,
+        commentCount =
+            json.containsKey('comments') ? json['comments'].length : 0;
 
   @override
   _TrackCardState createState() => _TrackCardState();
@@ -93,9 +104,37 @@ class _TrackCardState extends State<TrackCard> {
                 widget.title,
                 style: TextStyle(color: Colors.white, fontSize: 20),
               ),
+              SizedBox(height: 4.0),
               Text(
-                "@${widget.user}",
+                "@${widget.user}, " +
+                    timeago.format(DateTime.parse(widget.time)),
                 style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
+              SizedBox(height: 8.0),
+              Row(
+                children: [
+                  Icon(Icons.library_music_outlined,
+                      color: Colors.white, size: 28),
+                  SizedBox(width: 4),
+                  Text(
+                    "${widget.trackCount}",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(width: 16),
+                  Icon(Icons.chat_bubble_outline,
+                      color: Colors.white, size: 28),
+                  SizedBox(width: 4),
+                  Text(
+                    "${widget.commentCount}",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ],
               ),
               Spacer(),
               Row(
@@ -103,27 +142,27 @@ class _TrackCardState extends State<TrackCard> {
                   Expanded(
                       child:
                           SoundPlayerUI.fromLoader((context) => loadTrack())),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: InkWell(
-                      onTap: () => setState(() => liked = !liked),
-                      child: Column(
-                        children: [
-                          Text(
-                            "${widget.likes + (liked ? 1 : 0)}",
-                            style: TextStyle(color: Colors.white, fontSize: 18),
-                          ),
-                          Icon(
-                            liked ? Icons.favorite : Icons.favorite_border,
-                            color: Colors.white,
-                            size: 36,
-                          )
-                        ],
-                      ),
+                  InkWell(
+                    onTap: () => setState(() => liked = !liked),
+                    child: Column(
+                      children: [
+                        Text(
+                          "${widget.likes + (liked ? 1 : 0)}",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        Icon(
+                          liked ? Icons.favorite : Icons.favorite_border,
+                          color: Colors.white,
+                          size: 36,
+                        ),
+                      ],
                     ),
                   )
                 ],
-              )
+              ),
             ],
           )),
     );
