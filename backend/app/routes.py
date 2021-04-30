@@ -56,8 +56,6 @@ def all_post():
     for dir in directories:
         post_file = SAVE_DIR + dir + '/post_file'
         post = load_dict(post_file)
-        if 'comments' in post.keys():
-            post.pop('comments')
         posts.append(post)
     feed['feed'] = posts
     return jsonify(feed)
