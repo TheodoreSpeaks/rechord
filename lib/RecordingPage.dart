@@ -14,10 +14,10 @@ class RecordingPage extends StatefulWidget {
   final String? title;
   final String? author;
   final String? postId;
-  final List<String>? filePaths;
+  final String? filePath;
 
   const RecordingPage(
-      {Key? key, this.title, this.author, this.filePaths, this.postId})
+      {Key? key, this.title, this.author, this.filePath, this.postId})
       : super(key: key);
   @override
   _RecordingPageState createState() => _RecordingPageState();
@@ -36,7 +36,7 @@ class _RecordingPageState extends State<RecordingPage> {
   String recording = Track.tempFile(WellKnownMediaFormats.adtsAac);
   Track? track;
 
-  List<SoundPlayer> players = [];
+  SoundPlayer? player;
 
   @override
   void initState() {
@@ -74,7 +74,7 @@ class _RecordingPageState extends State<RecordingPage> {
     timer.cancel();
     waveTimer.cancel();
     _recorder.release();
-    purgePlayers();
+    if (player != null) player!.release();
     super.dispose();
   }
 
@@ -107,47 +107,24 @@ class _RecordingPageState extends State<RecordingPage> {
     setState(() {});
   }
 
-  void startPlayer() async {
+  void startPlayerRecorder() async {
     // TODO: might break?
-    purgePlayers();
-    List<Track> tracks = [];
-    for (String filePath in widget.filePaths!) {
-      // var saveToFile = Track.tempFile(WellKnownMediaFormats.adtsAac);
-      // var saveToFile =
-
-      // await Downloader.download('$ip/get_file?path=$filePath', saveToFile);
-
-      // var track = Track.fromAsset(saveToFile);
-      Track track;
-      track = Track.fromURL('$ip/get_file?path=$filePath',
-          mediaFormat: WellKnownMediaFormats.adtsAac);
-      tracks.add(track);
+    if (widget.filePath != null) {
+      player = SoundPlayer.noUI();
+      player!.play(Track.fromURL('$ip/get_file?path=${widget.filePath}',
+          mediaFormat: WellKnownMediaFormats.adtsAac));
     }
 
-    for (Track track in tracks) {
-      SoundPlayer player = SoundPlayer.noUI();
-      player.play(track);
-      players.add(player);
-    }
-  }
-
-  void purgePlayers() async {
-    var toPurge = players;
-    for (SoundPlayer player in toPurge) {
-      await player.release();
-    }
-    players = [];
+    record();
   }
 
   void stopPlayer() async {
     // await _player.stopPlayer();
-    for (SoundPlayer player in players) {
-      if (!player.isStopped) {
-        await player.pause();
-        await player.stop();
-      }
+    if (player != null && !player!.isStopped) {
+      await player!.pause();
+      await player!.stop();
     }
-    purgePlayers();
+
     setState(() {});
   }
 
@@ -197,7 +174,7 @@ class _RecordingPageState extends State<RecordingPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     WaveVisualization(data: waveArray1),
-                    widget.filePaths != null
+                    widget.filePath != null
                         ? Column(
                             children: [
                               SizedBox(height: 128),
@@ -235,8 +212,7 @@ class _RecordingPageState extends State<RecordingPage> {
               case RecordingStage.notRecording:
                 stage = RecordingStage.recording;
                 recordStartTime = DateTime.now();
-                record();
-                startPlayer();
+                startPlayerRecorder();
                 break;
               case RecordingStage.recording:
                 stage = RecordingStage.reviewRecording;

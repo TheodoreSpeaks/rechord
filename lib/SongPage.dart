@@ -159,7 +159,7 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
               builder: (context) => RecordingPage(
                 title: widget.title,
                 author: widget.user,
-                filePaths: getTrackPaths(),
+                filePath: widget.filePath,
                 postId: widget.postId,
               ),
             ));
