@@ -105,44 +105,61 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
     await showDialog(
       context: context,
       builder: (context) {
-        return SimpleDialog(
-          title: const Text('Add a comment'),
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                width: 400,
-                child: TextFormField(
-                  controller: _commentController,
-                  keyboardType: TextInputType.multiline,
-                  maxLines: 5,
-                  style: TextStyle(color: Colors.black),
-                  decoration: InputDecoration(
-                      enabledBorder: InputBorder.none,
-                      hintStyle: TextStyle(color: Colors.black87),
-                      hintText: 'Add your comment!'),
-                ),
-              ),
-            ),
-            Row(
-              children: [
-                Spacer(),
-                TextButton(
-                    onPressed: () {
-                      _commentController.clear();
-                      Navigator.of(context).pop();
-                    },
-                    child: Text('Cancel')),
-                TextButton(
-                    onPressed: () {
-                      submitComment();
-                      Navigator.of(context).pop();
-                    },
-                    child: Text('Submit')),
-              ],
-            ),
-          ],
-        );
+        return Dialog(
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(20.0))),
+            child: Container(
+              padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
+              decoration:
+                  BoxDecoration(borderRadius: BorderRadius.circular(32.0)),
+              height: 260,
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Add a comment', style: TextStyle(fontSize: 24)),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        width: 400,
+                        child: TextFormField(
+                          controller: _commentController,
+                          keyboardType: TextInputType.multiline,
+                          maxLines: 5,
+                          style: TextStyle(color: Colors.black),
+                          decoration: InputDecoration(
+                              enabledBorder: InputBorder.none,
+                              hintStyle: TextStyle(color: Colors.black87),
+                              hintText: 'Add your comment!'),
+                        ),
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Spacer(),
+                        TextButton(
+                            onPressed: () {
+                              _commentController.clear();
+                              Navigator.of(context).pop();
+                            },
+                            child: Text('Cancel')),
+                        SizedBox(width: 8.0),
+                        FloatingActionButton.extended(
+                            key: null,
+                            onPressed: () {
+                              submitComment();
+                              Navigator.of(context).pop();
+                            },
+                            label: Text('Submit'))
+                        // TextButton(
+                        //     onPressed: () {
+                        //       submitComment();
+                        //       Navigator.of(context).pop();
+                        //     },
+                        //     child: Text('Submit')),
+                      ],
+                    ),
+                  ]),
+            ));
       },
     );
   }

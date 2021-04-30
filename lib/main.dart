@@ -94,7 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
         width: double.infinity,
         decoration: BoxDecoration(
             gradient: LinearGradient(
-                colors: [Colors.purple, Colors.blue],
+                colors: [Colors.purple, Colors.deepPurple],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter)),
         child: Column(
@@ -183,7 +183,8 @@ class _MyHomePageState extends State<MyHomePage> {
         onPressed: () => Navigator.of(context).push(MaterialPageRoute(
           builder: (context) => RecordingPage(),
         )),
-        backgroundColor: Colors.lightGreen,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
         heroTag: null,
         label: Text('Create Track'),
         icon: Icon(Icons.add),
