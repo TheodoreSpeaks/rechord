@@ -144,18 +144,8 @@ class _MyHomePageState extends State<MyHomePage> {
             child: ListView.builder(
           itemCount: filteredJson.length,
           itemBuilder: (context, index) =>
-              TrackCard.fromJson(filteredJson.reversed.toList()[index], 0),
-        )
-            // child: ListView(
-            //   children: <Widget>[
-            //     TrackCard(
-            //       user: 'TheodoreSpeaks',
-            //       genre: 'Rock',
-            //       title: 'Created this funky bassline let me know what you think!',
-            //     ),
-            //   ],
-            // ),
-            ),
+              TrackCard.fromJson(filteredJson[index], 0),
+        )),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.of(context).push(MaterialPageRoute(

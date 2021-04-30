@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:rechord/RecordingPage.dart';
 import 'dart:math';
+import 'package:timeago/timeago.dart' as timeago;
 
 import 'package:sounds/sounds.dart';
 
@@ -58,9 +59,9 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
     liked = widget.isLiked;
   }
 
-  Future<Track> loadTrack() async {
+  Future<Track> loadTrack(String path) async {
     Track track;
-    track = Track.fromURL('$ip/get_file?path=${widget.filePath}',
+    track = Track.fromURL('$ip/get_file?path=$path',
         mediaFormat: WellKnownMediaFormats.adtsAac);
     return track;
   }
@@ -72,45 +73,6 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
       toReturn.add(json['file']);
     }
     return toReturn;
-  }
-
-  void startPlayer() async {
-    // TODO: might break?
-    purgePlayers();
-    List<Track> tracks = [];
-    for (String filePath in getTrackPaths()) {
-      Track track;
-      track = Track.fromURL('$ip/get_file?path=$filePath',
-          mediaFormat: WellKnownMediaFormats.adtsAac);
-      tracks.add(track);
-    }
-
-    for (Track track in tracks.reversed) {
-      SoundPlayer player = SoundPlayer.noUI();
-      player.play(track);
-      players.add(player);
-      print(players);
-    }
-  }
-
-  void purgePlayers() async {
-    for (SoundPlayer player in players) {
-      await player.release();
-    }
-    players = [];
-  }
-
-  void stopPlayer() async {
-    // await _player.stopPlayer();
-    for (SoundPlayer player in players) {
-      if (!player.isStopped) {
-        await player.pause();
-        await player.stop();
-      }
-      print('player is stopped: ${player.isStopped}');
-    }
-    purgePlayers();
-    setState(() {});
   }
 
   Future<void> refresh() async {
@@ -129,6 +91,7 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
     FormData formData = FormData.fromMap({
       "comment": _commentController.text,
       "user": "TheodoreSpeaks",
+      "time": DateTime.now().toString(),
       "likes": 0
     });
 
@@ -267,6 +230,7 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
                               title: json['title'],
                               likes: 0,
                               filePath: json['file'],
+                              time: json['time'],
                               user: json['user'],
                             );
                           }),
@@ -288,6 +252,7 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
                             return Comment(
                               title: json['comment'],
                               user: json['user'],
+                              time: json['time'],
                               likes: int.parse(json['likes']),
                             );
                           }),
@@ -300,11 +265,6 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
         ],
       ),
     );
-  }
-
-  int getTrackCount() {
-    // Do backend stuff
-    return 4;
   }
 
   Container buildHeader() {
@@ -338,24 +298,25 @@ class _SongPageState extends State<SongPage> with TickerProviderStateMixin {
           Spacer(),
           Row(
             children: [
-              // Expanded(
-              //     child: SoundPlayerUI.fromLoader((context) => loadTrack())),
-              FloatingActionButton(
-                key: null,
-                onPressed: () {
-                  if (!playing) {
-                    startPlayer();
-                  } else {
-                    stopPlayer();
-                  }
-                  setState(() {
-                    playing = !playing;
-                  });
-                },
-                child: Icon(playing ? Icons.pause : Icons.play_arrow),
-                backgroundColor: Colors.lightGreen,
-              ),
-              Spacer(),
+              Expanded(
+                  child: SoundPlayerUI.fromLoader(
+                      (context) => loadTrack(widget.filePath))),
+              // FloatingActionButton(
+              //   key: null,
+              //   onPressed: () {
+              //     if (!playing) {
+              //       startPlayer();
+              //     } else {
+              //       stopPlayer();
+              //     }
+              //     setState(() {
+              //       playing = !playing;
+              //     });
+              //   },
+              //   child: Icon(playing ? Icons.pause : Icons.play_arrow),
+              //   backgroundColor: Colors.lightGreen,
+              // ),
+              // Spacer(),
               Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: InkWell(
@@ -404,13 +365,15 @@ class TrackComment extends StatefulWidget {
   final String user;
   final int likes;
   final String filePath;
+  final String time;
 
   const TrackComment(
       {Key? key,
       this.title = 'Lorem ipsum',
       this.user = 'TheodoreSpeaks',
       this.likes = 0,
-      this.filePath = ''})
+      this.filePath = '',
+      required this.time})
       : super(key: key);
 
   @override
@@ -418,6 +381,13 @@ class TrackComment extends StatefulWidget {
 }
 
 class _TrackCommentState extends State<TrackComment> {
+  Future<Track> loadTrack(String path) async {
+    Track track;
+    track = Track.fromURL('$ip/get_file?path=$path',
+        mediaFormat: WellKnownMediaFormats.adtsAac);
+    return track;
+  }
+
   bool liked = false;
   @override
   Widget build(BuildContext context) {
@@ -426,25 +396,27 @@ class _TrackCommentState extends State<TrackComment> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(padding: EdgeInsets.all(4), child: Text('@${widget.user}')),
+          Padding(
+              padding: EdgeInsets.all(4),
+              child: Text(
+                  '@${widget.user}, ${timeago.format(DateTime.parse(widget.time), locale: 'en_short')}')),
           Padding(
               padding: EdgeInsets.all(4),
               child: Text(widget.title, style: TextStyle(fontSize: 18))),
           SizedBox(height: 8),
-          InkWell(
-            onTap: () => setState(() => liked = !liked),
-            child: Row(
-              children: [
-                Icon(Icons.volume_up),
-                Spacer(),
-                Icon(
-                  liked ? Icons.favorite : Icons.favorite_border,
-                  size: 24,
-                ),
-                SizedBox(width: 8.0),
-                Text('${widget.likes + (liked ? 1 : 0)}')
-              ],
-            ),
+          Row(
+            children: [
+              Expanded(
+                  child: SoundPlayerUI.fromLoader(
+                      (context) => loadTrack(widget.filePath))),
+              SizedBox(width: 8.0),
+              Icon(
+                liked ? Icons.favorite : Icons.favorite_border,
+                size: 24,
+              ),
+              SizedBox(width: 8.0),
+              Text('${widget.likes + (liked ? 1 : 0)}')
+            ],
           )
         ],
       ),
@@ -455,10 +427,15 @@ class _TrackCommentState extends State<TrackComment> {
 class Comment extends StatefulWidget {
   final String title;
   final String user;
+  final String time;
   final int likes;
 
   const Comment(
-      {Key? key, required this.title, required this.user, required this.likes})
+      {Key? key,
+      required this.title,
+      required this.user,
+      required this.likes,
+      required this.time})
       : super(key: key);
 
   @override
@@ -474,7 +451,8 @@ class _CommentState extends State<Comment> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('@${widget.user}'),
+            Text(
+                '@${widget.user}, ${timeago.format(DateTime.parse(widget.time), locale: 'en_short')}'),
             InkWell(
               onTap: () => setState(() => liked = !liked),
               child: Row(

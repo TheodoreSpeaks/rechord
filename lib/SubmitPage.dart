@@ -36,7 +36,8 @@ class _SubmitPageState extends State<SubmitPage> {
         "file": await MultipartFile.fromFile(widget.track.path),
         "genre": currentGenre,
         "title": _titleController.text,
-        "user": "TheodoreSpeaks"
+        "user": "TheodoreSpeaks",
+        "time": DateTime.now().toString()
       });
 
       var response = await dio.post('$ip/new_post', data: formData);
@@ -44,7 +45,8 @@ class _SubmitPageState extends State<SubmitPage> {
       FormData formData = FormData.fromMap({
         "file": await MultipartFile.fromFile(widget.track.path),
         "title": _titleController.text,
-        "user": "TheodoreSpeaks"
+        "user": "TheodoreSpeaks",
+        "time": DateTime.now().toString()
       });
 
       var response =
